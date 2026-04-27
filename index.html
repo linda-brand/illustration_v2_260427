@@ -1063,25 +1063,29 @@ function updateExportSizeHint() {
 async function downloadImage() {
     const captureEl = document.getElementById('capture-area');
     const exportScale = getSelectedExportScale();
-    const btn = document.getElementById('downloadBtn') || document.querySelector('.btn-download');
-
-    // 버튼 비활성화
+    const btn = document.querySelector('.btn-download');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ 저장 중...'; }
 
-    try {
-        // ── 핵심: 저장 전 차트를 고DPI로 업스케일 렌더링 ──
-        let chartPixelRatioBackup = null;
-        if (window.myChart) {
-            chartPixelRatioBackup = window.myChart.options.devicePixelRatio;
-            window.myChart.options.devicePixelRatio = exportScale * (window.devicePixelRatio || 1);
-            window.myChart.resize();
-            window.myChart.update('none');
-            // 렌더링이 완전히 끝날 때까지 대기
-            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-            await new Promise(r => setTimeout(r, 120));
-        }
+    // 차트가 있으면: 차트만 별도 고해상도 캔버스에 그린 뒤 합성
+    const srcCanvas = document.getElementById('myChart');
+    let hiResChartUrl = null;
 
-        const canvas = await html2canvas(captureEl, {
+    try {
+        if (srcCanvas && srcCanvas.width > 0 && srcCanvas.height > 0) {
+            // 오프스크린 캔버스에 현재 차트 캔버스를 고배율로 복사
+            const off = document.createElement('canvas');
+            off.width  = srcCanvas.width  * exportScale;
+            off.height = srcCanvas.height * exportScale;
+            const offCtx = off.getContext('2d');
+            offCtx.imageSmoothingEnabled = true;
+            offCtx.imageSmoothingQuality = 'high';
+            offCtx.drawImage(srcCanvas, 0, 0, off.width, off.height);
+            hiResChartUrl = off.toDataURL('image/png', 1.0);
+        }
+    } catch(e) { /* 실패해도 아래 html2canvas로 계속 */ }
+
+    try {
+        const mainCanvas = await html2canvas(captureEl, {
             scale: exportScale,
             useCORS: true,
             allowTaint: true,
@@ -1089,31 +1093,42 @@ async function downloadImage() {
             logging: false,
             imageTimeout: 20000,
             onclone: (doc) => {
-                // 클론 문서에서 data-html2canvas-ignore 요소 숨김 처리
                 doc.querySelectorAll('[data-html2canvas-ignore]').forEach(el => el.style.display = 'none');
             }
         });
 
-        // ── 차트 DPI 원복 ──
-        if (window.myChart && chartPixelRatioBackup !== null) {
-            window.myChart.options.devicePixelRatio = chartPixelRatioBackup;
-            window.myChart.resize();
-            window.myChart.update('none');
+        // 차트 영역에 고해상도 이미지 덮어쓰기
+        if (hiResChartUrl && srcCanvas) {
+            const rect = srcCanvas.getBoundingClientRect();
+            const pRect = captureEl.getBoundingClientRect();
+            const x = Math.round((rect.left - pRect.left) * exportScale);
+            const y = Math.round((rect.top  - pRect.top)  * exportScale);
+            const w = Math.round(rect.width  * exportScale);
+            const h = Math.round(rect.height * exportScale);
+
+            await new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    mainCanvas.getContext('2d').drawImage(img, x, y, w, h);
+                    resolve();
+                };
+                img.onerror = resolve;
+                img.src = hiResChartUrl;
+            });
         }
 
         const a = document.createElement('a');
         a.download = '도해프로젝트_' + new Date().toISOString().slice(0,10) + '_' + exportScale + 'x.png';
-        a.href = canvas.toDataURL('image/png', 1.0);
+        a.href = mainCanvas.toDataURL('image/png', 1.0);
         a.click();
 
     } catch(e) {
         alert('저장 중 오류가 발생했습니다: ' + e.message);
-        // 오류 시에도 차트 복원
-        if (window.myChart) { window.myChart.resize(); window.myChart.update('none'); }
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = '📸 고해상도 PNG 저장'; }
     }
 }
+
 
 // ═══════════════════════════════════════════════════════
 //  인라인 편집 (제목·부제목·주석·이름)
