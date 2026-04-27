@@ -8,216 +8,127 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* 프리텐다드 폰트 적용 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        
-        :root { 
-            --main-font: 'Pretendard', sans-serif; 
-            /* 도해 프로젝트 메인 컬러 설정 */
-            --main-color: #433F8E; 
-            --accent-color: #2EAAB1; 
+        :root {
+            --main-font: 'Pretendard', sans-serif;
+            --main-color: #433F8E;
+            --accent-color: #2EAAB1;
             --sub-color1: #FAD378;
             --sub-color2: #FF7A4F;
         }
-        body { font-family: var(--main-font); background-color: #eef2f5; padding: 20px; display: flex; gap: 25px; margin: 0; align-items: flex-start;}
-        
-        .control-panel { background: white; padding: 25px; border-radius: 10px; width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; flex-shrink: 0; box-sizing: border-box;}
-        .control-panel h2 { margin-top: 0; font-size: 20px; color: #333; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; margin-bottom: 20px; letter-spacing: -0.5px;}
-        .control-panel label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; margin-top: 15px;}
+        body { font-family: var(--main-font); background-color: #eef2f5; padding: 20px; display: flex; gap: 25px; margin: 0; align-items: flex-start; }
+        .control-panel { background: white; padding: 25px; border-radius: 10px; width: 380px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); height: fit-content; flex-shrink: 0; box-sizing: border-box; }
+        .control-panel h2 { margin-top: 0; font-size: 20px; color: #333; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; margin-bottom: 20px; letter-spacing: -0.5px; }
+        .control-panel label { font-size: 13px; font-weight: bold; color: #555; display: block; margin-bottom: 5px; margin-top: 15px; }
         .control-panel select, .control-panel input[type="text"], .control-panel textarea { width: 100%; margin-bottom: 5px; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; font-family: var(--main-font); }
-        .control-panel select { background-color: #f9f9f9; font-weight: bold; color: var(--main-color);}
-        
-        .ai-input-group { background: #f0f0fa; padding: 15px; border-radius: 8px; border: 1px solid #d3d1ea; margin-bottom: 20px; }
-        .ai-input-group h3 { margin: 0 0 10px 0; font-size: 15px; color: var(--main-color); }
-        .ai-input-group textarea { border: 1px solid #b5b3d6; height: 60px; font-size: 12px; }
-        .btn-ai { background: var(--main-color); margin-top: 5px; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold;}
+        .control-panel select { background-color: #f9f9f9; font-weight: bold; color: var(--main-color); }
+
+        /* ── AI 입력 박스 ── */
+        .ai-input-group { background: #f0f0fa; padding: 15px; border-radius: 8px; border: 1px solid #d3d1ea; margin-bottom: 16px; }
+        .ai-input-group h3 { margin: 0 0 8px 0; font-size: 15px; color: var(--main-color); }
+        .ai-input-group textarea { border: 1px solid #b5b3d6; height: 70px; font-size: 12px; resize: vertical; }
+        .btn-ai { background: var(--main-color); margin-top: 5px; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-family: var(--main-font); }
         .btn-ai:hover { background: #2f2c68; }
 
-        .btn-sheet { background: #2E7D32; color: white; margin-top: 15px; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 14px;}
-        .btn-sheet:hover { background: #1B5E20; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 85%; max-width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; color: #333;}
-        .modal-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-        .modal-table th, .modal-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        .modal-table th { background: #f4f4f4; font-size: 13px; color: #555;}
-        .modal-table input { width: 90%; border: 1px solid #ccc; border-radius: 3px; text-align: center; padding: 6px; font-family: var(--main-font); }
-        .modal-table input:focus { border-color: var(--main-color); outline: none; background: #fffafa;}
-        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;}
-        .modal-btns button { width: auto; margin: 0; padding: 10px 20px;}
+        /* ── 직접 입력 박스 ── */
+        .direct-input-group { background: #f0fff4; padding: 15px; border-radius: 8px; border: 1px solid #7ac794; margin-bottom: 16px; }
+        .direct-input-group h3 { margin: 0 0 8px 0; font-size: 15px; color: #1d6b37; }
+        .direct-input-group label { color: #1d6b37; font-weight: bold; font-size: 12px; margin-top: 8px; }
+        .direct-input-group input, .direct-input-group textarea, .direct-input-group select { border: 1px solid #7ac794; font-size: 13px; }
+        .direct-input-group textarea { resize: vertical; height: 48px; }
+
+        .parse-summary { margin-top: 8px; padding: 9px 10px; border-radius: 7px; background: #f0fff5; border: 1px dashed #7ac794; color: #1d6b37; font-size: 12px; line-height: 1.45; }
+        .parse-summary.warn { background: #fff8e6; border-color: #f0bf58; color: #8a5b00; }
+        .parse-summary.error { background: #fff0f0; border-color: #f09a9a; color: #a32222; }
 
         .data-group { background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #e0e0e0; margin-top: 10px; }
-        .data-group label { margin-top: 5px; color: #333; }
-        .axis-inputs { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px;}
-        .axis-inputs input { width: 48%; }
+        .help-text { font-size: 12px; color: #888; margin-top: -3px; margin-bottom: 8px; display: block; line-height: 1.4; }
 
         .slider-group { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .slider-group input[type="range"] { flex: 1; cursor: pointer; accent-color: var(--main-color); }
         .font-size-display { font-size: 14px; font-weight: bold; color: var(--main-color); width: 40px; text-align: right; }
 
-        button.main-btn { background: var(--main-color); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 14px; width: 100%; transition: 0.2s; margin-top: 15px; font-family: var(--main-font);}
+        button.main-btn { background: var(--main-color); color: white; border: none; padding: 12px; cursor: pointer; border-radius: 5px; font-weight: bold; font-size: 14px; width: 100%; margin-top: 15px; font-family: var(--main-font); }
         button.main-btn:hover { background: #2f2c68; }
-        .btn-download { background: #333; margin-top: 10px; border: none; color: white; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold;}
+        .btn-download { background: #333; margin-top: 10px; border: none; color: white; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-family: var(--main-font); }
         .btn-download:hover { background: #111; }
+        .btn-sheet { background: #2E7D32; color: white; margin-top: 10px; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; font-size: 14px; font-family: var(--main-font); }
+        .btn-sheet:hover { background: #1B5E20; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 85%; max-width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; color: #333; }
+        .modal-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        .modal-table th, .modal-table td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        .modal-table th { background: #f4f4f4; font-size: 13px; color: #555; }
+        .modal-table input { width: 90%; border: 1px solid #ccc; border-radius: 3px; text-align: center; padding: 6px; font-family: var(--main-font); }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .modal-btns button { width: auto; margin: 0; padding: 10px 20px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-family: var(--main-font); }
+
+        .axis-inputs { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 5px; }
+        .axis-inputs input { width: 48%; }
+
+        .palette-preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .palette-btn { border: 1px solid #ddd; background: #fff; color: #333; border-radius: 8px; padding: 9px 8px; cursor: pointer; font-family: var(--main-font); font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 7px; }
+        .palette-btn:hover, .palette-btn.active { border-color: var(--main-color); background: #f5f5fc; color: var(--main-color); }
+        .palette-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); flex-shrink: 0; }
 
         .export-option-group { background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #e0e0e0; margin-top: 10px; }
         .export-option-row { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
         .export-option-row select { flex: 1; margin-bottom: 0; }
         .export-size-hint { font-size: 12px; color: #666; line-height: 1.4; margin-top: 6px; display: block; }
 
-        .preview-area { flex: 1; display: flex; justify-content: flex-start; align-items: flex-start; width: 100%; position: sticky; top: 20px;}
+        /* ── 미리보기 ── */
+        .preview-area { flex: 1; display: flex; justify-content: flex-start; align-items: flex-start; width: 100%; position: sticky; top: 20px; }
         #capture-area { background: white; width: 750px; padding: 40px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; flex-direction: column; position: relative; }
-        
         .header-line { border-top: 3px solid #000; margin-bottom: 12px; }
-        .chart-title { font-size: 32px; font-weight: 900; margin: 0 0 5px 0; letter-spacing: -1px; color: #111; display: inline-block; vertical-align: middle;}
-        .chart-subtitle { font-size: 18px; font-weight: normal; margin-left: 8px; letter-spacing: -0.5px; color: #555; display: inline-block; vertical-align: baseline; line-height: 1.4; word-break: keep-all;}
-        
-        #chart-container { height: 420px; margin-top: 0px; flex-shrink: 0; transition: none; position: relative;}
-        #pie-side-list { display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 210px; z-index: 5; }
-        .pie-side-list-inner { display: flex; flex-direction: column; gap: 10px; }
-        .pie-side-item { display: flex; align-items: flex-start; gap: 8px; min-width: 0; cursor: pointer; border-radius: 8px; padding: 4px; margin: -4px; transition: box-shadow 0.15s ease, background-color 0.15s ease; }
-        .pie-side-item:hover { box-shadow: 0 0 0 2px rgba(67,63,142,0.20); background-color: rgba(245,245,250,0.92); }
-        .pie-side-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-        .pie-side-text { min-width: 0; color: #111; font-weight: 700; line-height: 1.3; letter-spacing: -0.4px; word-break: keep-all; overflow-wrap: anywhere; }
-        .pie-side-text strong { font-weight: 900; }
-        .pie-side-label, .pie-side-value { display: inline-block; border-radius: 5px; padding: 1px 3px; margin: -1px -3px; transition: box-shadow 0.15s ease, background-color 0.15s ease; }
-        .pie-side-label { cursor: text; }
-        .pie-side-value { cursor: ns-resize; }
-        .pie-side-label:hover { box-shadow: 0 0 0 2px rgba(17,17,17,0.14); background: rgba(255,255,255,0.88); }
-        .pie-side-value:hover { box-shadow: 0 0 0 2px rgba(67,63,142,0.22); background: rgba(245,245,250,0.95); }
-        #table-container { display: none; margin-top: 5px; margin-bottom: 0px; flex-grow: 1; height: auto; min-height: unset; }
-        
-        /* 일반 엑셀 표 */
-        .asia-table { width: 100%; border-collapse: collapse; text-align: center; font-family: var(--main-font); margin-bottom: 0; }
+        .chart-title { font-size: 32px; font-weight: 900; margin: 0 0 5px 0; letter-spacing: -1px; color: #111; display: inline-block; vertical-align: middle; }
+        .chart-subtitle { font-size: 18px; font-weight: normal; margin-left: 8px; letter-spacing: -0.5px; color: #555; display: inline-block; vertical-align: baseline; line-height: 1.4; word-break: keep-all; }
+        #chart-container { height: 420px; margin-top: 0; flex-shrink: 0; position: relative; }
+        #table-container { display: none; margin-top: 5px; flex-grow: 1; }
+        #displayFootnote { font-size: 14px; color: #111; margin-top: 5px; text-align: left; letter-spacing: -0.5px; display: none; font-family: var(--main-font); line-height: 1.4; font-weight: 500; }
+        .footer-watermark { display: flex; justify-content: flex-end; align-items: center; margin-top: 20px; font-size: 18px; font-weight: bold; color: #111; flex-shrink: 0; font-family: var(--main-font); border-top: 1px solid #eee; padding-top: 15px; }
+        .inline-editable { cursor: text; border-radius: 4px; transition: box-shadow 0.15s; }
+        .inline-editable:hover { box-shadow: 0 0 0 2px rgba(67,63,142,0.18); background: rgba(255,255,255,0.55); }
+        .inline-editable[contenteditable="true"] { outline: 2px solid var(--main-color); background: #fff; padding: 2px 4px; }
+
+        /* 표 스타일 */
+        .asia-table { width: 100%; border-collapse: collapse; text-align: center; font-family: var(--main-font); }
         .asia-table th { border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 15px 5px; font-weight: bold; color: #333; }
         .asia-table td { border-bottom: 1px solid #ddd; padding: 15px 5px; color: #111; vertical-align: middle; }
         .asia-table td.col-0 { background-color: var(--main-color); color: white; font-weight: bold; border-bottom: 1px solid #fff; }
-        
-        /* 카드형 리스트 표 */
-        .list-info-container { width: 100%; display: flex; flex-direction: column; gap: 15px; font-family: var(--main-font); margin-top: 10px;}
-        .list-header-box { background-color: var(--main-color); color: white; border-radius: 20px; padding: 12px 25px; font-weight: 900; letter-spacing: -1px; width: 100%; box-sizing: border-box; word-break: keep-all; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 5px;}
+
+        /* 카드형 리스트 */
+        .list-info-container { width: 100%; display: flex; flex-direction: column; gap: 15px; font-family: var(--main-font); margin-top: 10px; }
+        .list-header-box { background-color: var(--main-color); color: white; border-radius: 20px; padding: 12px 25px; font-weight: 900; letter-spacing: -1px; width: 100%; box-sizing: border-box; word-break: keep-all; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 5px; }
         .list-item-group { display: flex; flex-direction: column; gap: 10px; padding-left: 25px; margin-bottom: 15px; }
-        .list-item { color: #111; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px; font-weight: 600; letter-spacing: -0.5px; word-break: keep-all;}
+        .list-item { color: #111; line-height: 1.4; display: flex; align-items: flex-start; gap: 8px; font-weight: 600; letter-spacing: -0.5px; word-break: keep-all; }
         .list-item::before { content: '▶'; color: var(--main-color); font-size: 0.85em; margin-top: 3px; }
 
-        /* 타임라인(흐름도) 표 전용 CSS */
+        /* 타임라인 */
         .timeline-container { width: 100%; display: flex; flex-direction: column; font-family: var(--main-font); margin-top: 10px; border-top: 2px solid #000; }
         .timeline-row { display: flex; width: 100%; min-height: 50px; }
-        .timeline-left { background-color: var(--main-color); color: white; width: 33%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 900; position: relative; border-bottom: 2px solid #ffffff; padding: 15px 10px; word-break: keep-all; letter-spacing: -0.5px;}
-        .timeline-left::before { content: ''; position: absolute; bottom: -12px; left: 50%; margin-left: -12px; border-width: 12px 12px 0 12px; border-style: solid; border-color: #ffffff transparent transparent transparent; z-index: 10; }
-        .timeline-left::after { content: ''; position: absolute; bottom: -10px; left: 50%; margin-left: -10px; border-width: 10px 10px 0 10px; border-style: solid; border-color: var(--main-color) transparent transparent transparent; z-index: 11; }
-        .timeline-row:last-child .timeline-left::before,
-        .timeline-row:last-child .timeline-left::after { display: none; }
+        .timeline-left { background-color: var(--main-color); color: white; width: 33%; display: flex; align-items: center; justify-content: center; text-align: center; font-weight: 900; position: relative; border-bottom: 2px solid #ffffff; padding: 15px 10px; word-break: keep-all; letter-spacing: -0.5px; }
+        .timeline-left::before { content: ''; position: absolute; bottom: -12px; left: 50%; margin-left: -12px; border-width: 12px; border-style: solid; border-color: #ffffff transparent transparent transparent; z-index: 10; }
+        .timeline-left::after { content: ''; position: absolute; bottom: -10px; left: 50%; margin-left: -10px; border-width: 10px; border-style: solid; border-color: var(--main-color) transparent transparent transparent; z-index: 11; }
+        .timeline-row:last-child .timeline-left::before, .timeline-row:last-child .timeline-left::after { display: none; }
         .timeline-row:last-child .timeline-left { border-bottom: none; }
-        .timeline-right { width: 67%; display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #ccc; color: #111; word-break: keep-all; line-height: 1.4; font-weight: 500;}
-        
-        .help-text { font-size: 12px; color: #888; margin-top: -5px; margin-bottom: 10px; display: block; line-height: 1.4;}
+        .timeline-right { width: 67%; display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #ccc; color: #111; word-break: keep-all; line-height: 1.4; font-weight: 500; }
 
-        #displayFootnote { font-size: 14px; color: #111; margin-top: 5px; text-align: left; letter-spacing: -0.5px; display: none; font-family: var(--main-font); line-height: 1.4; font-weight: 500;}
+        /* 원 그래프 사이드 리스트 */
+        #pie-side-list { display: none; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 210px; z-index: 5; }
+        .pie-side-list-inner { display: flex; flex-direction: column; gap: 10px; }
+        .pie-side-item { display: flex; align-items: flex-start; gap: 8px; }
+        .pie-side-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+        .pie-side-text { min-width: 0; color: #111; font-weight: 700; line-height: 1.3; letter-spacing: -0.4px; word-break: keep-all; }
 
-        .footer-watermark { display: flex; justify-content: flex-end; align-items: center; margin-top: 20px; font-size: 18px; font-weight: bold; color: #111; flex-shrink: 0; font-family: var(--main-font); border-top: 1px solid #eee; padding-top: 15px;}
-
-        /* 사용자 친화형 단계 메뉴 */
-        .quick-action-bar { display: grid; grid-template-columns: 0.82fr 0.86fr 1.18fr 0.9fr 0.82fr; gap: 6px; margin: -6px 0 10px; }
-        .quick-btn { border: 1px solid #ddd; background: #fff; color: #333; padding: 8px 4px; border-radius: 8px; cursor: pointer; font-weight: 800; font-family: var(--main-font); font-size: 11px; line-height: 1.1; min-height: 36px; word-break: keep-all; white-space: nowrap; text-align: center; letter-spacing: -0.01em; }
-        .quick-btn { position: relative; overflow: hidden; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease; }
-        .quick-btn::before { content: ''; position: absolute; left: 8px; right: 8px; top: 4px; height: 3px; border-radius: 999px; background: currentColor; opacity: 0; transition: opacity 0.15s ease; }
-        .quick-btn:hover { border-color: var(--main-color); color: var(--main-color); background: #f5f5fc; }
-        .quick-btn.active { color: #fff; border-color: transparent; transform: translateY(-1px); box-shadow: 0 7px 14px rgba(0,0,0,0.14); }
-        .quick-btn.active::before { opacity: 0.75; background: rgba(255,255,255,0.85); }
-        #quickInputBtn:hover { border-color: #0056b3; color: #0056b3; background: #f0f6ff; }
-        #quickInputBtn.active { background: #0056b3; }
-        #quickDataEditBtn:hover { border-color: #111; color: #111; background: #f4f4f4; }
-        #quickDataEditBtn.active { background: #111; }
-        #quickDesignBtn:hover { border-color: var(--main-color); color: var(--main-color); background: #f5f5fc; }
-        #quickDesignBtn.active { background: var(--main-color); }
-        #quickSaveBtn:hover { border-color: #2E7D32; color: #2E7D32; background: #f1fbf2; }
-        #quickSaveBtn.active { background: #2E7D32; }
-        #undoBtn { background: #f8f9fb; color: #555; }
-        #undoBtn:hover { border-color: #777; color: #111; background: #fff; }
-        .quick-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        /* 히스토리 상태 */
         .history-status { background: #f6f7fb; border: 1px solid #e4e6ee; border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; font-size: 12px; color: #555; line-height: 1.4; }
-        .panel-sticky-header { position: sticky; top: 0; z-index: 90; background: rgba(255,255,255,0.98); backdrop-filter: blur(8px); padding: 7px 0 8px; margin: -25px 0 12px; border-bottom: 1px solid #edf0f3; box-shadow: 0 6px 14px rgba(0,0,0,0.04); }
-        .panel-sticky-header h2 { margin: 0 0 7px 0; padding-bottom: 6px; font-size: 18px; line-height: 1.25; }
-        .panel-sticky-header .quick-action-bar { gap: 5px; margin: 0 0 6px; }
-        .panel-sticky-header .quick-btn { min-height: 31px; padding: 5px 3px; font-size: 10.5px; border-radius: 7px; }
-        #undoBtn { letter-spacing: -0.03em; }
-        .control-section { scroll-margin-top: 96px; }
-        .panel-sticky-header .history-status { margin: 0; padding: 6px 8px; font-size: 11px; line-height: 1.25; }
-        .control-section { border: 1px solid #e1e4ea; border-radius: 12px; background: #fff; margin: 12px 0; overflow: hidden; transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease; }
-        .control-section:hover { border-color: #cfd6e0; }
-        .control-section[open] { box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
-        .control-section summary { list-style: none; cursor: pointer; padding: 13px 14px 13px 16px; font-weight: 900; color: #222; background: #f8f9fb; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-left: 6px solid transparent; transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease; }
-        .control-section summary::-webkit-details-marker { display: none; }
-        .control-section summary::after { content: '펼치기'; font-size: 11px; color: #777; font-weight: 800; padding: 4px 9px; border-radius: 999px; background: rgba(0,0,0,0.05); transition: background-color 0.18s ease, color 0.18s ease; }
-        .control-section[open] summary::after { content: '접기'; color: var(--main-color); }
-        .control-section[data-menu-key='input'] { --section-accent: #0056b3; --section-bg: #f0f6ff; --section-open-bg: #e2efff; --section-pill-bg: #dcebff; }
-        .control-section[data-menu-key='dataedit'] { --section-accent: #111111; --section-bg: #f5f5f5; --section-open-bg: #ededed; --section-pill-bg: #e2e2e2; }
-        .control-section[data-menu-key='design'] { --section-accent: var(--main-color); --section-bg: #f5f5fc; --section-open-bg: #eaeaf6; --section-pill-bg: #d8d8ee; }
-        .control-section[data-menu-key='save'] { --section-accent: #2E7D32; --section-bg: #f1fbf2; --section-open-bg: #e4f7e7; --section-pill-bg: #d3efd8; }
-        .control-section[data-menu-key] summary { color: var(--section-accent); background: var(--section-bg); border-left-color: var(--section-accent); }
-        .control-section[data-menu-key] summary::after { color: var(--section-accent); background: var(--section-pill-bg); }
-        .control-section[data-menu-key][open] { border-color: var(--section-accent); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
-        .control-section[data-menu-key][open] summary { background: var(--section-open-bg); }
-        .control-section[data-menu-key='input'][open] summary::after,
-        .control-section[data-menu-key='dataedit'][open] summary::after,
-        .control-section[data-menu-key='design'][open] summary::after,
-        .control-section[data-menu-key='save'][open] summary::after { color: var(--section-accent); }
-        .control-section-title { display: inline-flex; align-items: center; gap: 8px; min-width: 0; line-height: 1.2; }
-        .control-section-icon { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: #fff; background: var(--section-accent, #777); font-size: 13px; box-shadow: 0 3px 8px rgba(0,0,0,0.14); }
-        .control-section-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .control-section.section-attention { animation: sectionAttention 1.05s ease; }
-        .control-section.section-attention summary { animation: sectionSummaryAttention 1.05s ease; }
-        @keyframes sectionAttention {
-            0% { transform: translateY(0); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
-            28% { transform: translateY(-2px); box-shadow: 0 0 0 4px var(--section-pill-bg), 0 10px 24px rgba(0,0,0,0.13); border-color: var(--section-accent); }
-            62% { transform: translateY(-1px); box-shadow: 0 0 0 3px var(--section-pill-bg), 0 8px 20px rgba(0,0,0,0.10); border-color: var(--section-accent); }
-            100% { transform: translateY(0); box-shadow: 0 3px 10px rgba(0,0,0,0.04); }
-        }
-        @keyframes sectionSummaryAttention {
-            0% { filter: brightness(1); }
-            28% { filter: brightness(0.97) saturate(1.12); }
-            62% { filter: brightness(0.99) saturate(1.08); }
-            100% { filter: brightness(1); }
-        }
-        .control-section-body { padding: 14px; }
-        .control-section-body > :first-child { margin-top: 0; }
-        .menu-subhead { margin: 4px 0 10px; padding: 9px 10px; border-radius: 9px; background: #f6f7fb; border: 1px solid #e4e6ee; }
-        .menu-subhead:not(:first-child) { margin-top: 16px; }
-        .menu-subhead-title { font-size: 13px; font-weight: 900; color: #222; display: flex; align-items: center; gap: 6px; letter-spacing: -0.02em; }
-        .menu-subhead-desc { margin-top: 3px; font-size: 11px; color: #777; line-height: 1.35; word-break: keep-all; }
-        .parse-summary { margin-top: 8px; padding: 9px 10px; border-radius: 7px; background: #ffffff; border: 1px dashed #8fb8f5; color: #245a9f; font-size: 12px; line-height: 1.45; }
-        .parse-summary.ok { background: #f0fff5; border-color: #7ac794; color: #1d6b37; }
-        .parse-summary.warn { background: #fff8e6; border-color: #f0bf58; color: #8a5b00; }
-        .parse-summary.error { background: #fff0f0; border-color: #f09a9a; color: #a32222; }
-        .palette-preset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-        .palette-btn { border: 1px solid #ddd; background: #fff; color: #333; border-radius: 8px; padding: 9px 8px; cursor: pointer; font-family: var(--main-font); font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 7px; justify-content: flex-start; }
-        .palette-btn:hover, .palette-btn.active { border-color: var(--main-color); background: #f5f5fc; color: var(--main-color); }
-        .palette-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); flex-shrink: 0; }
+
+        /* 즐겨찾기 */
         .favorite-btn-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 7px; }
         .favorite-btn-row button { border: none; background: #444; color: #fff; border-radius: 7px; padding: 9px 5px; cursor: pointer; font-weight: 800; font-family: var(--main-font); }
         .favorite-btn-row button:hover { background: #111; }
-        .btn-download-svg { background: #555; }
-        .btn-download-svg:hover { background: #222; }
-        .inline-editable { cursor: text; border-radius: 4px; transition: box-shadow 0.15s ease, background-color 0.15s ease; }
-        .inline-editable:hover { box-shadow: 0 0 0 2px rgba(67,63,142,0.12); background-color: rgba(255,255,255,0.55); }
-        .inline-editable[contenteditable="true"] { outline: 2px solid var(--main-color); background: #fff; padding: 2px 4px; }
-
-        .chart-quick-edit { position: absolute; display: none; min-width: 205px; max-width: 250px; z-index: 30; background: rgba(255,255,255,0.98); border: 2px solid var(--main-color); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.18); padding: 10px; box-sizing: border-box; font-family: var(--main-font); }
-        .chart-quick-edit-title { font-size: 12px; color: #333; font-weight: 900; line-height: 1.35; margin-bottom: 7px; word-break: keep-all; }
-        .chart-quick-edit-sub { font-size: 11px; color: #777; font-weight: 700; margin-bottom: 7px; }
-        .chart-quick-edit-row { display: flex; gap: 6px; align-items: center; }
-        .chart-quick-edit input { flex: 1; min-width: 0; border: 1px solid #ccc; border-radius: 7px; padding: 8px; font-size: 13px; font-weight: 800; font-family: var(--main-font); box-sizing: border-box; }
-        .chart-quick-edit input:focus { outline: 2px solid rgba(67,63,142,0.18); border-color: var(--main-color); }
-        .chart-quick-edit button { border: none; border-radius: 7px; padding: 8px 9px; cursor: pointer; font-size: 12px; font-weight: 900; font-family: var(--main-font); }
-        .chart-quick-apply { background: var(--main-color); color: white; }
-        .chart-quick-close { background: #eee; color: #333; }
-        .chart-quick-edit-help { margin-top: 6px; color: #777; font-size: 11px; line-height: 1.35; }
-        .preview-editable-target { cursor: text; border-radius: 5px; transition: box-shadow 0.15s ease, background-color 0.15s ease; }
-        .preview-editable-target:hover { box-shadow: 0 0 0 2px rgba(67,63,142,0.20); background-color: rgba(245,245,250,0.85); }
-        .preview-quick-edit { z-index: 45; border-color: #111; }
-        .preview-quick-edit .chart-quick-apply { background: #111; }
-        .edit-hover-hint { position: absolute; display: none; z-index: 44; pointer-events: none; background: rgba(17,17,17,0.92); color: #fff; border-radius: 999px; padding: 7px 11px; font-size: 12px; font-weight: 800; line-height: 1; box-shadow: 0 6px 18px rgba(0,0,0,0.18); white-space: nowrap; }
 
         @media screen and (max-width: 768px) {
             body { flex-direction: column; padding: 10px; gap: 15px; }
@@ -225,2331 +136,1025 @@
             .preview-area { width: 100%; overflow-x: auto; padding-bottom: 10px; position: relative; top: auto; }
             #capture-area { min-width: 750px; }
         }
-
-        @media screen and (max-width: 480px) {
-            .quick-action-bar { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
-            .quick-btn { font-size: 10px; padding: 8px 2px; min-height: 36px; }
-            .panel-sticky-header { margin: -20px 0 10px; padding: 7px 0 7px; }
-            .panel-sticky-header h2 { font-size: 17px; margin-bottom: 6px; }
-            .panel-sticky-header .quick-btn { min-height: 34px; padding: 6px 4px; }
-            .panel-sticky-header .history-status { font-size: 10px; padding: 5px 7px; }
-            .control-section[data-menu-key='input'] { --section-bg: #e3f0ff; --section-open-bg: #cfe3ff; --section-pill-bg: #bdd8ff; }
-            .control-section[data-menu-key='dataedit'] { --section-bg: #eeeeee; --section-open-bg: #dcdcdc; --section-pill-bg: #d1d1d1; }
-            .control-section[data-menu-key='design'] { --section-bg: #eef0f8; --section-open-bg: #dcdcea; --section-pill-bg: #ceccdf; }
-            .control-section[data-menu-key='save'] { --section-bg: #e5f7e7; --section-open-bg: #cdefd1; --section-pill-bg: #bde8c4; }
-            .control-section { margin: 10px 0; border-width: 2px; }
-            .control-section summary { padding: 13px 12px 13px 14px; font-size: 14px; border-left-width: 8px; }
-            .control-section[data-menu-key] summary { background: var(--section-bg); }
-            .control-section[open] summary { background: var(--section-open-bg); }
-            .control-section-icon { width: 28px; height: 28px; font-size: 15px; box-shadow: 0 3px 9px rgba(0,0,0,0.20); }
-            .control-section summary::after { font-size: 10.5px; padding: 5px 9px; background: #fff; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
-            .history-status { font-size: 11px; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="control-panel">
-        <h2>🛠️ 도해 프로젝트 데스크</h2>
+<div class="control-panel">
+    <h2>🛠️ 도해 프로젝트 데스크</h2>
+    <div class="history-status" id="historyStatus">작업 이력이 준비되었습니다.</div>
 
-        <div class="quick-action-bar" id="quickActionBar">
-            <button type="button" class="quick-btn" id="undoBtn" onclick="undoLastChange()" title="Ctrl+Z / Command+Z">되돌리기</button>
-            <button type="button" class="quick-btn" id="quickInputBtn" data-default-label="입력" data-open-label="입력" onclick="toggleQuickMenu('input')">입력</button>
-            <button type="button" class="quick-btn" id="quickDataEditBtn" data-default-label="데이터수정" data-open-label="데이터수정" onclick="toggleQuickMenu('dataedit')">데이터수정</button>
-            <button type="button" class="quick-btn" id="quickDesignBtn" data-default-label="디자인" data-open-label="디자인" onclick="toggleQuickMenu('design')">디자인</button>
-            <button type="button" class="quick-btn" id="quickSaveBtn" data-default-label="저장" data-open-label="저장" onclick="toggleQuickMenu('save')">저장</button>
-        </div>
-        <div class="history-status" id="historyStatus">작업 이력이 준비되었습니다.</div>
+    <!-- ★ 직접 입력 섹션 (핵심 기능) -->
+    <div class="direct-input-group">
+        <h3>✏️ 직접 입력 (제목 · 항목 · 수치)</h3>
+        <span class="help-text" style="color:#1d6b37; margin-top:0;">제목과 항목을 직접 입력하거나, 아래 「엑셀 붙여넣기」를 사용하세요.</span>
 
-        <div class="ai-input-group">
-            <h3>🤖 제미나이 데이터 자동 입력</h3>
-            <span class="help-text" style="color: #0056b3; margin-bottom:5px;">제미나이가 생성한 텍스트를 통째로 붙여넣으세요.</span>
-            <textarea id="geminiInput" placeholder="[종류] multi-line&#10;[제목] 서울 아파트 가격 추이&#10;..."></textarea>
-            <button class="btn-ai" id="autoFillBtn" onclick="parseGeminiData()">🪄 AI 데이터 자동 완성하기</button>
-            <div id="parseSummary" class="parse-summary" aria-live="polite">붙여넣은 데이터가 어떻게 읽혔는지 여기에 표시됩니다.</div>
-        </div>
-        
-        <div id="chartTypeHeaderRow" style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <label style="margin-bottom: 0;">종류 선택</label>
-            <span style="font-size: 12px; cursor: pointer; color: var(--main-color); font-weight: bold; text-decoration: underline;" onclick="loadExampleData()">📝 예시 불러오기</span>
-        </div>
+        <label>제목</label>
+        <input type="text" id="titleInput" placeholder="예: 서울 아파트 가격 추이" value="">
+
+        <label>단위 및 출처</label>
+        <input type="text" id="subInput" placeholder="예: (단위: 만원, 출처: 국토부)" value="">
+
+        <label>종류 선택</label>
         <select id="chartType" onchange="handleChartTypeChange()">
+            <option value="bar" selected>📊 (세로) 단일 막대 그래프</option>
             <option value="line">📈 단일 꺾은선 그래프</option>
-            <option value="bar">📊 (세로) 단일 막대 그래프</option>
             <option value="multi-bar">📊 (세로) 다중 막대 그래프</option>
             <option value="stacked-bar">📊 (세로) 누적 막대 그래프</option>
             <option value="h-bar">▤ (가로) 단일 막대 그래프</option>
             <option value="h-multi-bar">▤ (가로) 다중 막대 그래프</option>
             <option value="h-stacked-bar">▤ (가로) 누적 막대 그래프</option>
             <option value="multi-line">📉 다중 선 그래프</option>
-            <option value="combo">📈 선+막대 혼합 (막대 1 + 선 다중)</option>
-            <option value="multi-combo">📈 다중막대+선 혼합 (막대 2 + 선 다중)</option>
-            <option value="stacked-combo">📉 누적막대+선 혼합</option>
-            <option value="pie" selected>📋 원 그래프 (도넛 차트)</option>
-            <option value="table">📋 텍스트 표 (엑셀 연동/이중표 지원)</option>
-            <option value="list">📝 리스트형 인포그래픽 (카드형)</option>
-            <option value="timeline">⏳ 타임라인형 표 (흐름 추이)</option>
-            <option disabled>──────────</option>
-            <option value="chart-table">📊+📋 혼합그래프 + 텍스트 표 동시 출력</option>
+            <option value="combo">📈 선+막대 혼합</option>
+            <option value="pie">🥧 원 그래프 (도넛 차트)</option>
+            <option value="table">📋 텍스트 표</option>
+            <option value="list">📝 리스트형 인포그래픽</option>
+            <option value="timeline">⏳ 타임라인형 표</option>
         </select>
 
-        <button class="btn-sheet" id="openSheetBtn" onclick="openDataSheet()">📊 데이터 시트 편집 (엑셀 방식)</button>
+        <label>X축 항목 (콤마로 구분)</label>
+        <textarea id="labelsInput" rows="2" placeholder="예: 2020년, 2021년, 2022년, 2023년"></textarea>
 
-        <div class="data-group" id="palettePresetGroup">
-            <label style="color:var(--main-color); font-size:14px;">🎨 색상 팔레트 프리셋</label>
-            <input type="hidden" id="palettePresetKey" value="dohae">
-            <div class="palette-preset-grid">
-                <button type="button" class="palette-btn active" data-palette="dohae" onclick="applyPalettePreset('dohae')"><span class="palette-swatch" style="background:#433F8E"></span>도해 기본</button>
-                <button type="button" class="palette-btn" data-palette="economyBlue" onclick="applyPalettePreset('economyBlue')"><span class="palette-swatch" style="background:#1F6FEB"></span>경제 지표용</button>
-                <button type="button" class="palette-btn" data-palette="riskRed" onclick="applyPalettePreset('riskRed')"><span class="palette-swatch" style="background:#C1121F"></span>경고·위험 강조</button>
-                <button type="button" class="palette-btn" data-palette="compareGray" onclick="applyPalettePreset('compareGray')"><span class="palette-swatch" style="background:#555"></span>비교 대조용</button>
-            </div>
-            <span class="help-text" style="margin-top:8px; margin-bottom:0;">문서 성격에 맞게 그래프·표 강조색을 한 번에 바꿉니다.</span>
-        </div>
-
-        <div class="data-group" id="labelSettingGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 수치 표시 방식</label>
-            <select id="labelDisplayType" onchange="updateOutput()">
-                <option value="all" selected>전체 기본값: 모든 데이터에 표시</option>
-                <option value="last">전체 기본값: 맨 끝 데이터만 표시 (강조)</option>
-                <option value="none">전체 기본값: 표시 안 함 (숫자 숨김)</option>
-            </select>
-            <span class="help-text" style="margin-top:8px;">아래에서 데이터 묶음별로 따로 바꿀 수 있습니다. ‘전체 설정 따름’을 두면 위 기본값을 그대로 사용합니다.</span>
-
-            <div id="datasetLabelDisplayWrap1" style="margin-top:8px;">
-                <label id="datasetLabelDisplayLabel1" style="margin-top:0;">데이터 1 수치 표시 방식</label>
-                <select id="datasetLabelDisplayType1" onchange="updateOutput()">
-                    <option value="follow" selected>전체 설정 따름</option>
-                    <option value="all">모든 데이터에 표시</option>
-                    <option value="last">맨 끝 데이터만 표시 (강조)</option>
-                    <option value="none">표시 안 함 (숫자 숨김)</option>
-                </select>
-            </div>
-
-            <div id="datasetLabelDisplayWrap2" style="display:none; margin-top:8px;">
-                <label id="datasetLabelDisplayLabel2" style="margin-top:0;">데이터 2 수치 표시 방식</label>
-                <select id="datasetLabelDisplayType2" onchange="updateOutput()">
-                    <option value="follow" selected>전체 설정 따름</option>
-                    <option value="all">모든 데이터에 표시</option>
-                    <option value="last">맨 끝 데이터만 표시 (강조)</option>
-                    <option value="none">표시 안 함 (숫자 숨김)</option>
-                </select>
-            </div>
-
-            <div id="datasetLabelDisplayWrap3" style="display:none; margin-top:8px;">
-                <label id="datasetLabelDisplayLabel3" style="margin-top:0;">데이터 3 수치 표시 방식</label>
-                <select id="datasetLabelDisplayType3" onchange="updateOutput()">
-                    <option value="follow" selected>전체 설정 따름</option>
-                    <option value="all">모든 데이터에 표시</option>
-                    <option value="last">맨 끝 데이터만 표시 (강조)</option>
-                    <option value="none">표시 안 함 (숫자 숨김)</option>
-                </select>
-            </div>
-
-            <div id="datasetLabelDisplayWrap4" style="display:none; margin-top:8px;">
-                <label id="datasetLabelDisplayLabel4" style="margin-top:0;">데이터 4 수치 표시 방식</label>
-                <select id="datasetLabelDisplayType4" onchange="updateOutput()">
-                    <option value="follow" selected>전체 설정 따름</option>
-                    <option value="all">모든 데이터에 표시</option>
-                    <option value="last">맨 끝 데이터만 표시 (강조)</option>
-                    <option value="none">표시 안 함 (숫자 숨김)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="data-group" id="koreanNumberGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 숫자 한글 변환 (조·억·만)</label>
-            <select id="koreanNumberType" onchange="updateOutput()">
-                <option value="apply" selected>자동 변환 적용 (예: 1조2345억)</option>
-                <option value="none">원래 숫자 유지 (예: 12345678)</option>
-            </select>
-        </div>
-
-
-        <div class="data-group" id="highlightSettingGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 강조 데이터 표시</label>
-            <select id="highlightMode" onchange="updateOutput()">
-                <option value="none" selected>기본 스타일 유지</option>
-                <option value="custom">선택한 데이터 강조</option>
-            </select>
-            <div id="highlightTargetWrapRed" style="display:none; margin-top:8px;">
-                <label style="margin-top:0; color:#433F8E;">네이비색으로 강조할 데이터</label>
-                <select id="highlightTargetsRed" multiple size="6" onchange="updateOutput()" style="height:auto;"></select>
-            </div>
-            <div id="highlightTargetWrapOrange" style="display:none; margin-top:8px;">
-                <label style="margin-top:0; color:#2EAAB1;">청록색으로 강조할 데이터</label>
-                <select id="highlightTargetsOrange" multiple size="6" onchange="updateOutput()" style="height:auto;"></select>
-            </div>
-            <div id="highlightTargetWrapBlue" style="display:none; margin-top:8px;">
-                <label style="margin-top:0; color:#FF7A4F;">주황색으로 강조할 데이터</label>
-                <select id="highlightTargetsBlue" multiple size="6" onchange="updateOutput()" style="height:auto;"></select>
-            </div>
-            <span class="help-text" style="margin-top:8px; margin-bottom:0;">필요할 때만 특정 막대·점·조각을 강조합니다. 네이비색·청록색·주황색을 각각 따로 고를 수 있고, 여러 항목을 동시에 선택할 수 있습니다. (복수 선택/취소 : Windows는 Ctrl, Mac은 Command)</span>
-        </div>
-
-        <div class="data-group" id="fontSizeSettingGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 표/그래프 글자 크기 미세 조절</label>
-            <div class="slider-group">
-                <input type="range" id="globalFontSize" min="12" max="32" value="20" oninput="document.getElementById('fontSizeDisplay').innerText = this.value + 'px'; updateOutput();">
-                <span id="fontSizeDisplay" class="font-size-display">20px</span>
-            </div>
-            <span class="help-text">글자가 겹치거나 잘릴 경우 슬라이더를 조절해 보세요.</span>
-        </div>
-
-        <div class="data-group" id="datasetLabelSizeGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 데이터별 수치 글자 크기</label>
-            <span class="help-text">그래프 위 숫자(값 라벨)만 데이터 묶음별로 따로 조절합니다.</span>
-
-            <div id="datasetFontWrap1" style="margin-top:8px;">
-                <label id="datasetFontLabel1" style="margin-top:0;">데이터 1</label>
-                <div class="slider-group">
-                    <input type="range" id="datasetFontSize1" min="10" max="32" value="18" oninput="updateDatasetFontDisplays(); updateOutput();">
-                    <span id="datasetFontDisplay1" class="font-size-display">18px</span>
-                </div>
-            </div>
-
-            <div id="datasetFontWrap2" style="display:none; margin-top:8px;">
-                <label id="datasetFontLabel2" style="margin-top:0;">데이터 2</label>
-                <div class="slider-group">
-                    <input type="range" id="datasetFontSize2" min="10" max="32" value="18" oninput="updateDatasetFontDisplays(); updateOutput();">
-                    <span id="datasetFontDisplay2" class="font-size-display">18px</span>
-                </div>
-            </div>
-
-            <div id="datasetFontWrap3" style="display:none; margin-top:8px;">
-                <label id="datasetFontLabel3" style="margin-top:0;">데이터 3</label>
-                <div class="slider-group">
-                    <input type="range" id="datasetFontSize3" min="10" max="32" value="18" oninput="updateDatasetFontDisplays(); updateOutput();">
-                    <span id="datasetFontDisplay3" class="font-size-display">18px</span>
-                </div>
-            </div>
-
-            <div id="datasetFontWrap4" style="display:none; margin-top:8px;">
-                <label id="datasetFontLabel4" style="margin-top:0;">데이터 4</label>
-                <div class="slider-group">
-                    <input type="range" id="datasetFontSize4" min="10" max="32" value="18" oninput="updateDatasetFontDisplays(); updateOutput();">
-                    <span id="datasetFontDisplay4" class="font-size-display">18px</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="data-group" id="datasetLabelColorGroup">
-            <label style="color:var(--main-color); font-size:14px;">📌 데이터별 수치 글자 색상</label>
-            <span class="help-text">그래프 위 숫자(값 라벨) 색상을 데이터 묶음별로 따로 지정합니다.</span>
-
-            <div id="datasetColorWrap1" style="margin-top:8px;">
-                <label id="datasetColorLabel1" style="margin-top:0;">데이터 1</label>
-                <select id="datasetFontColor1" onchange="updateOutput()">
-                    <option value="auto" selected>자동</option>
-                    <option value="#111111">검정</option>
-                    <option value="#555555">회색</option>
-                    <option value="#433F8E">네이비</option>
-                    <option value="#2EAAB1">청록</option>
-                    <option value="#FF7A4F">주황</option>
-                    <option value="#FAD378">노랑</option>
-                </select>
-            </div>
-
-            <div id="datasetColorWrap2" style="display:none; margin-top:8px;">
-                <label id="datasetColorLabel2" style="margin-top:0;">데이터 2</label>
-                <select id="datasetFontColor2" onchange="updateOutput()">
-                    <option value="auto" selected>자동</option>
-                    <option value="#111111">검정</option>
-                    <option value="#555555">회색</option>
-                    <option value="#433F8E">네이비</option>
-                    <option value="#2EAAB1">청록</option>
-                    <option value="#FF7A4F">주황</option>
-                    <option value="#FAD378">노랑</option>
-                </select>
-            </div>
-
-            <div id="datasetColorWrap3" style="display:none; margin-top:8px;">
-                <label id="datasetColorLabel3" style="margin-top:0;">데이터 3</label>
-                <select id="datasetFontColor3" onchange="updateOutput()">
-                    <option value="auto" selected>자동</option>
-                    <option value="#111111">검정</option>
-                    <option value="#555555">회색</option>
-                    <option value="#433F8E">네이비</option>
-                    <option value="#2EAAB1">청록</option>
-                    <option value="#FF7A4F">주황</option>
-                    <option value="#FAD378">노랑</option>
-                </select>
-            </div>
-
-            <div id="datasetColorWrap4" style="display:none; margin-top:8px;">
-                <label id="datasetColorLabel4" style="margin-top:0;">데이터 4</label>
-                <select id="datasetFontColor4" onchange="updateOutput()">
-                    <option value="auto" selected>자동</option>
-                    <option value="#111111">검정</option>
-                    <option value="#555555">회색</option>
-                    <option value="#433F8E">네이비</option>
-                    <option value="#2EAAB1">청록</option>
-                    <option value="#FF7A4F">주황</option>
-                    <option value="#FAD378">노랑</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="data-group" id="textSettingGroup">
-            <label style="margin-top:0; color:var(--main-color); font-size:14px;">✍️ 제목·부제목</label>
-            <span class="help-text" style="margin-bottom:8px;">미리보기의 제목이나 부제목을 더블클릭해도 바로 수정할 수 있습니다.</span>
-            <label>제목</label>
-            <input type="text" id="titleInput" value="">
-            
-            <div id="subInputGroup">
-                <label>단위 및 출처</label>
-                <input type="text" id="subInput" value="">
-            </div>
-        </div>
-        
         <div id="chartInputs">
-            <label>X축(항목) 데이터 라벨 (콤마 구분)</label>
-            <textarea id="labelsInput" rows="2"></textarea>
-            
-            <div class="data-group">
-                <label id="ds1NameLabel">데이터 1 (이름)</label>
-                <input type="text" id="dataName1" value="">
-                <label id="ds1DataLabel">데이터 1 (수치 - 콤마 구분)</label>
-                <textarea id="dataInput1" rows="2"></textarea>
-            </div>
+            <label id="ds1NameLabel">데이터 1 이름</label>
+            <input type="text" id="dataName1" placeholder="예: 서울" value="">
+            <label>데이터 1 수치 (콤마로 구분)</label>
+            <textarea id="dataInput1" rows="2" placeholder="예: 120, 135, 148, 162"></textarea>
 
-            <div class="data-group" id="dataset2Group" style="display: none;">
-                <label id="ds2NameLabel">데이터 2 (이름)</label>
+            <div id="dataset2Group" style="display:none;">
+                <label id="ds2NameLabel">데이터 2 이름</label>
                 <input type="text" id="dataName2" value="">
-                <label id="ds2DataLabel">데이터 2 (수치 - 콤마 구분)</label>
+                <label>데이터 2 수치</label>
                 <textarea id="dataInput2" rows="2"></textarea>
             </div>
-            
-            <div class="data-group" id="dataset3Group" style="display: none;">
-                <label id="ds3NameLabel">데이터 3 (이름)</label>
+            <div id="dataset3Group" style="display:none;">
+                <label id="ds3NameLabel">데이터 3 이름</label>
                 <input type="text" id="dataName3" value="">
-                <label id="ds3DataLabel">데이터 3 (수치 - 비워두면 숨김)</label>
+                <label>데이터 3 수치</label>
                 <textarea id="dataInput3" rows="2"></textarea>
             </div>
-
-            <div class="data-group" id="dataset4Group" style="display: none;">
-                <label id="ds4NameLabel">데이터 4 (이름 - 다중/누적 차트용)</label>
+            <div id="dataset4Group" style="display:none;">
+                <label id="ds4NameLabel">데이터 4 이름</label>
                 <input type="text" id="dataName4" value="">
-                <label id="ds4DataLabel">데이터 4 (수치 - 비워두면 숨김)</label>
+                <label>데이터 4 수치</label>
                 <textarea id="dataInput4" rows="2"></textarea>
             </div>
-            
-            <div class="data-group" id="axisSettingGroup" style="display: none;">
-                <label>수치 축(가로/세로) 범위 수동 설정</label>
+
+            <div id="axisSettingGroup" style="display:none;">
+                <label>Y축 범위 수동 설정 (선택)</label>
                 <div class="axis-inputs">
                     <input type="text" id="yMin" placeholder="최소값">
                     <input type="text" id="yMax" placeholder="최대값">
                 </div>
-                <div class="axis-inputs" id="y1Group" style="display: none;">
-                    <input type="text" id="y1Min" placeholder="우측축 최소값">
-                    <input type="text" id="y1Max" placeholder="우측축 최대값">
-                </div>
             </div>
         </div>
 
-        <div id="tableInputs" style="display: none;">
-            <label id="tableDataLabel">엑셀/리스트 데이터 붙여넣기</label>
-            <textarea id="tableDataInput" rows="10"></textarea>
-            <span class="help-text" id="tableHelpText" style="margin-top: 5px; color: var(--main-color);">💡 팁1: 위 칸과 병합할 땐 <b>^</b> 기호 입력.<br>💡 팁2: 표를 나눌 땐 맨 앞칸에 <b>## 소제목</b> 입력.<br>⌨️ (이제 입력창 안에서 탭(Tab) 키를 누르면 바로 탭이 삽입됩니다!)</span>
-        </div>
-
-        <div class="data-group" id="columnWidthSettingGroup" style="display:none;">
-            <label style="color:var(--main-color); font-size:14px;">📌 열 너비 수동 조절</label>
-            <div id="tableColumnWidthWrap">
-                <label style="margin-top:8px;">표 열 너비 (%, 콤마 구분)</label>
-                <input type="text" id="tableColumnWidthsInput" placeholder="예: 25, 35, 20, 20" oninput="updateOutput()">
-                <span class="help-text" id="tableColumnWidthHelp" style="margin-top:5px;">열 너비를 %로 입력하세요. 비우면 자동 너비로 표시됩니다.</span>
-            </div>
-            <div id="timelineColumnWidthWrap" style="display:none;">
-                <label style="margin-top:8px;">타임라인 열 너비 (%)</label>
-                <div class="axis-inputs">
-                    <input type="text" id="timelineWidthLeft" placeholder="좌측 열" oninput="updateOutput()">
-                    <input type="text" id="timelineWidthRight" placeholder="우측 열" oninput="updateOutput()">
-                </div>
-                <span class="help-text" style="margin-top:5px;">예: 33 / 67. 하나만 입력하면 나머지 열은 자동 계산합니다. 둘 다 비우면 기본 너비를 사용합니다.</span>
-            </div>
-        </div>
-
-        <div class="data-group" id="footnoteSettingGroup" style="background-color: #fff; border: 1px solid #ccc;">
-            <label style="margin-top:0;">하단 주석 (선택)</label>
-            <input type="text" id="footnoteInput" placeholder="예: *데이터 기준일은..." value="">
-        </div>
-        
-        <div class="data-group" id="reporterSettingGroup">
-            <label style="margin-top:0;">제작자 이름</label>
-            <input type="text" id="nameInput" value="홍길동 연구원">
-        </div>
-        
-        <button class="main-btn" id="applyBtn" onclick="handleApplyClick()">🔄 수동 적용하기</button>
-
-        <div class="data-group" id="favoriteSettingGroup">
-            <label style="margin-top:0; color:var(--main-color); font-size:14px;">⭐ 자주 쓰는 설정</label>
-            <input type="text" id="favoriteName" placeholder="예: 선그래프 기본값">
-            <select id="favoriteSelect" style="margin-top:6px;"></select>
-            <div class="favorite-btn-row">
-                <button type="button" onclick="saveFavoriteSettings()">저장</button>
-                <button type="button" onclick="loadFavoriteSettings()">불러오기</button>
-                <button type="button" onclick="deleteFavoriteSettings()">삭제</button>
-            </div>
-            <span class="help-text" style="margin-top:8px; margin-bottom:0;">현재 그래프 종류, 글자 크기, 색상, 입력값을 브라우저에 저장합니다.</span>
-        </div>
-
-        <div class="export-option-group" id="exportOptionGroup">
-            <label style="margin-top:0; color:var(--main-color); font-size:14px;">📸 저장 배율 선택</label>
-            <div class="export-option-row">
-                <select id="exportScale">
-                    <option value="2" selected>2배 고정 출력 (1500px 기준)</option>
-                    <option value="3">3배 고정 출력 (2250px 기준)</option>
-                    <option value="4">4배 최고화질 출력 (3000px 기준)</option>
-                </select>
-            </div>
-            <span class="export-size-hint">현재 750px 작업 화면을 기준으로 지정된 배율 크기로 고정 저장합니다.</span>
-        </div>
-
-        <button onclick="downloadImage()" class="btn-download" id="downloadBtn">📸 고해상도 PNG 저장</button>
-        <button onclick="downloadSvg()" class="btn-download btn-download-svg" id="svgDownloadBtn">🖋️ SVG 파일 저장</button>
-        
-        <div id="creatorFooter" style="margin-top: 20px; font-size: 13px; color: #888; text-align: center; font-weight: bold;">
-            만든 이 : 도해 프로젝트, 제미나이
+        <div id="tableInputs" style="display:none;">
+            <label>표/리스트 데이터 입력</label>
+            <textarea id="tableDataInput" rows="8" placeholder="탭이나 콤마로 열을 구분해 입력하세요."></textarea>
         </div>
     </div>
 
-    <div class="modal-overlay" id="sheetModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 style="margin:0;">📊 데이터 시트 편집</h3>
-                <span style="font-size:12px; color:#666; font-weight:normal;">* 행을 비우면 해당 항목이 삭제됩니다.</span>
-            </div>
-            <table class="modal-table" id="modalTable">
-                <thead>
-                    <tr id="modalTh">
-                        <th>항목(라벨)</th>
-                        <th><span id="sheetName1">데이터 1</span></th>
-                        <th id="sheetTh2" style="display:none;"><span id="sheetName2">데이터 2</span></th>
-                        <th id="sheetTh3" style="display:none;"><span id="sheetName3">데이터 3</span></th>
-                        <th id="sheetTh4" style="display:none;"><span id="sheetName4">데이터 4</span></th>
-                    </tr>
-                </thead>
-                <tbody id="modalTbody">
-                </tbody>
-            </table>
-            <button onclick="addRow()" style="margin-bottom:20px; cursor:pointer; background:#555; border:none; padding:8px 12px; color:white; border-radius:4px; font-size:12px;">+ 행 추가하기</button>
-            <div class="modal-btns">
-                <button class="btn-close" onclick="closeDataSheet()" style="background:#888; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">취소</button>
-                <button class="btn-save" onclick="saveDataSheet()" style="background:var(--main-color); color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">✅ 적용 및 닫기</button>
-            </div>
+    <!-- 엑셀 붙여넣기 -->
+    <div class="ai-input-group">
+        <h3>📋 엑셀 데이터 붙여넣기</h3>
+        <span class="help-text" style="color:#433F8E; margin-top:0;">엑셀에서 복사(Ctrl+C)한 내용을 아래에 바로 붙여넣으세요.</span>
+        <textarea id="geminiInput" placeholder="엑셀 셀을 선택 후 Ctrl+C → 여기에 Ctrl+V&#10;&#10;예시:&#10;연도&#9;서울&#9;부산&#10;2020&#9;120&#9;80&#10;2021&#9;135&#9;90&#10;2022&#9;148&#9;95"></textarea>
+        <button class="btn-ai" id="autoFillBtn" onclick="parseExcelData()">📥 엑셀 데이터 불러오기</button>
+        <div id="parseSummary" class="parse-summary">엑셀에서 복사한 내용을 붙여넣고 위 버튼을 누르세요.</div>
+    </div>
+
+    <button class="btn-sheet" onclick="openDataSheet()">📊 데이터 시트 편집 (팝업)</button>
+
+    <!-- 디자인 -->
+    <div class="data-group" style="margin-top:16px;">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">🎨 색상 팔레트</label>
+        <div class="palette-preset-grid">
+            <button type="button" class="palette-btn active" data-palette="dohae" onclick="applyPalettePreset('dohae')"><span class="palette-swatch" style="background:#433F8E"></span>도해 기본</button>
+            <button type="button" class="palette-btn" data-palette="economyBlue" onclick="applyPalettePreset('economyBlue')"><span class="palette-swatch" style="background:#1F6FEB"></span>경제 지표용</button>
+            <button type="button" class="palette-btn" data-palette="riskRed" onclick="applyPalettePreset('riskRed')"><span class="palette-swatch" style="background:#C1121F"></span>경고·위험 강조</button>
+            <button type="button" class="palette-btn" data-palette="compareGray" onclick="applyPalettePreset('compareGray')"><span class="palette-swatch" style="background:#555"></span>비교 대조용</button>
         </div>
     </div>
 
-    <div class="preview-area">
-        <div id="capture-area">
-            <div class="header-line" id="topLine"></div>
-            
-            <h1 class="chart-title inline-editable" id="displayTitle" title="더블클릭해서 데이터 수정(제목 수정)">제목입력</h1>
-            <br>
-            <span class="chart-subtitle inline-editable" id="displaySub" title="더블클릭해서 데이터 수정(부제목 수정)">(단위 및 출처 입력)</span>
-            
-            <div id="chart-container">
-                <canvas id="myChart"></canvas>
-                <div id="pie-side-list" style="display: none;"></div>
-                <div id="chartQuickEdit" class="chart-quick-edit" data-html2canvas-ignore="true">
-                    <div class="chart-quick-edit-title" id="chartQuickEditTitle">데이터 빠른 수정</div>
-                    <div class="chart-quick-edit-sub" id="chartQuickEditSub">항목</div>
-                    <div class="chart-quick-edit-row">
-                        <input type="text" id="chartQuickEditInput" inputmode="decimal" aria-label="그래프 데이터 값 수정">
-                        <button type="button" class="chart-quick-apply" id="chartQuickEditApply">적용</button>
-                        <button type="button" class="chart-quick-close" id="chartQuickEditClose">×</button>
-                    </div>
-                    <div class="chart-quick-edit-help">데이터값 수정 · 더블클릭해서 데이터 수정: 막대·점·원그래프 숫자 줄은 데이터값, 그래프 위 범례는 데이터명을 더블클릭해 수정하세요.</div>
-                </div>
-            </div>
+    <div class="data-group">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">📌 수치 표시 방식</label>
+        <select id="labelDisplayType" onchange="updateOutput()">
+            <option value="all" selected>모든 데이터에 표시</option>
+            <option value="last">맨 끝 데이터만 표시</option>
+            <option value="none">숫자 숨김</option>
+        </select>
+    </div>
 
-            <div id="table-container" style="display: none;"></div>
-            <div id="previewQuickEdit" class="chart-quick-edit preview-quick-edit" data-html2canvas-ignore="true">
-                <div class="chart-quick-edit-title" id="previewQuickEditTitle">미리보기 빠른 수정</div>
-                <div class="chart-quick-edit-sub" id="previewQuickEditSub">항목</div>
-                <div class="chart-quick-edit-row">
-                    <input type="text" id="previewQuickEditInput" aria-label="미리보기 텍스트 수정">
-                    <button type="button" class="chart-quick-apply" id="previewQuickEditApply">적용</button>
-                    <button type="button" class="chart-quick-close" id="previewQuickEditClose">×</button>
-                </div>
-                <div class="chart-quick-edit-help">항목명 수정 · 더블클릭해서 데이터 수정: X축 항목·표 셀·원그래프 라벨 안의 항목명 줄을 더블클릭해 수정하세요.</div>
-            </div>
-            <div id="previewHoverHint" class="edit-hover-hint" data-html2canvas-ignore="true">더블클릭해서 데이터 수정</div>
-            
-            <div id="displayFootnote" class="inline-editable" title="더블클릭해서 데이터 수정(주석 수정)"></div>
-            
-            <div class="footer-watermark">
-                도해&nbsp;&nbsp;<span id="displayName" class="inline-editable" title="더블클릭해서 데이터 수정(작성자 이름 수정)">홍길동 연구원</span>
-            </div>
+    <div class="data-group">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">📌 숫자 한글 변환 (조·억·만)</label>
+        <select id="koreanNumberType" onchange="updateOutput()">
+            <option value="apply" selected>자동 변환 적용 (예: 1조2345억)</option>
+            <option value="none">원래 숫자 유지</option>
+        </select>
+    </div>
+
+    <div class="data-group">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">📌 글자 크기 조절</label>
+        <div class="slider-group">
+            <input type="range" id="globalFontSize" min="12" max="32" value="20" oninput="document.getElementById('fontSizeDisplay').innerText=this.value+'px'; updateOutput();">
+            <span id="fontSizeDisplay" class="font-size-display">20px</span>
         </div>
     </div>
 
-    <script>
-    const rootStyles = getComputedStyle(document.documentElement);
-    const globalFont = rootStyles.getPropertyValue('--main-font').trim();
-    Chart.defaults.font.family = globalFont;
+    <div class="data-group">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">✏️ 하단 주석 (선택)</label>
+        <input type="text" id="footnoteInput" placeholder="예: *자료 기준일: 2024년 12월" value="">
+    </div>
 
-    let myChart = null;
-    const EDIT_HOVER_MESSAGE = '더블클릭해서 데이터 수정';
-    const ITEM_EDIT_HOVER_MESSAGE = '항목명 수정 · 더블클릭해서 데이터 수정';
-    const VALUE_EDIT_HOVER_MESSAGE = '데이터값 수정 · 더블클릭해서 데이터 수정';
-    const DATASET_NAME_EDIT_HOVER_MESSAGE = '데이터명 수정 · 더블클릭해서 데이터 수정';
-    const PIE_SPLIT_HOVER_MESSAGE = '항목명/데이터값 구분 · 더블클릭해서 데이터 수정';
+    <div class="data-group">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">👤 제작자 이름</label>
+        <input type="text" id="nameInput" value="도해 프로젝트">
+    </div>
 
-    // 도해 프로젝트에 맞춘 기본 컬러 세트 반영
-    const PALETTE_PRESETS = {
-        dohae: {
-            label: '도해 기본', main: '#433F8E', accent: '#2EAAB1', gray1: '#FAD378', gray2: '#FF7A4F', light: '#E4E3F0', axis: '#555555',
-            bar: ['#433F8E', '#2EAAB1', '#FF7A4F', '#FAD378', '#A19FC4'],
-            line: ['#433F8E', '#2EAAB1', '#FF7A4F', '#FAD378'],
-            pie: ['#433F8E', '#2EAAB1', '#FF7A4F', '#FAD378', '#A19FC4', '#D1EAEB']
-        },
-        economyBlue: {
-            label: '경제 지표용', main: '#1F6FEB', accent: '#4FA3FF', gray1: '#6E879F', gray2: '#2F4154', light: '#A9CFFB', axis: '#3f5f7f',
-            bar: ['#1F6FEB', '#4FA3FF', '#8EC5FF', '#2F4154'],
-            line: ['#1F6FEB', '#0B3D91', '#4FA3FF', '#7B8794'],
-            pie: ['#1F6FEB', '#4FA3FF', '#8EC5FF', '#BFDFFF', '#6E879F', '#D6E9FF']
-        },
-        riskRed: {
-            label: '경고·위험 강조', main: '#C1121F', accent: '#FF6B35', gray1: '#777777', gray2: '#333333', light: '#F7A072', axis: '#8a1c1c',
-            bar: ['#C1121F', '#433F8E', '#FF6B35', '#7A0C12'],
-            line: ['#C1121F', '#111111', '#FF6B35', '#777777'],
-            pie: ['#C1121F', '#433F8E', '#FF6B35', '#777777', '#AAAAAA', '#DDDDDD']
-        },
-        compareGray: {
-            label: '비교 대조용', main: '#433F8E', accent: '#555555', gray1: '#999999', gray2: '#222222', light: '#CFCFCF', axis: '#666666',
-            bar: ['#433F8E', '#555555', '#AFAFAF', '#222222'],
-            line: ['#433F8E', '#555555', '#999999', '#222222'],
-            pie: ['#433F8E', '#555555', '#888888', '#BBBBBB', '#D6D6D6', '#EEEEEE']
-        }
+    <button class="main-btn" onclick="updateOutput()">🔄 새로고침</button>
+
+    <!-- 즐겨찾기 -->
+    <div class="data-group" style="margin-top:16px;">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">⭐ 설정 저장/불러오기</label>
+        <input type="text" id="favoriteName" placeholder="설정 이름 입력">
+        <select id="favoriteSelect" style="margin-top:6px;"></select>
+        <div class="favorite-btn-row">
+            <button type="button" onclick="saveFavoriteSettings()">저장</button>
+            <button type="button" onclick="loadFavoriteSettings()">불러오기</button>
+            <button type="button" onclick="deleteFavoriteSettings()">삭제</button>
+        </div>
+    </div>
+
+    <!-- 저장 -->
+    <div class="export-option-group" style="margin-top:16px;">
+        <label style="color:var(--main-color); font-size:14px; margin-top:0;">📸 저장 배율 선택</label>
+        <div class="export-option-row">
+            <select id="exportScale" onchange="updateExportSizeHint()">
+                <option value="2" selected>2배 (1500px 기준)</option>
+                <option value="3">3배 (2250px 기준)</option>
+                <option value="4">4배 최고화질 (3000px 기준)</option>
+            </select>
+        </div>
+        <span class="export-size-hint" id="exportSizeHint">750px 기준 2배 크기로 저장합니다.</span>
+    </div>
+
+    <button onclick="downloadImage()" class="btn-download">📸 고해상도 PNG 저장</button>
+
+    <div style="margin-top:16px; font-size:13px; color:#888; text-align:center; font-weight:bold;">
+        도해 프로젝트 제작 데스크
+    </div>
+</div>
+
+<!-- 데이터 시트 모달 -->
+<div class="modal-overlay" id="sheetModal">
+    <div class="modal-content">
+        <div class="modal-header">📊 데이터 시트 편집</div>
+        <table class="modal-table" id="modalTable">
+            <thead>
+                <tr id="modalTh">
+                    <th>항목(라벨)</th>
+                    <th><span id="sheetName1">데이터 1</span></th>
+                    <th id="sheetTh2" style="display:none;"><span id="sheetName2">데이터 2</span></th>
+                    <th id="sheetTh3" style="display:none;"><span id="sheetName3">데이터 3</span></th>
+                    <th id="sheetTh4" style="display:none;"><span id="sheetName4">데이터 4</span></th>
+                </tr>
+            </thead>
+            <tbody id="modalTbody"></tbody>
+        </table>
+        <button onclick="addRow()" style="margin-bottom:20px; cursor:pointer; background:#555; border:none; padding:8px 12px; color:white; border-radius:4px; font-size:12px;">+ 행 추가</button>
+        <div class="modal-btns">
+            <button onclick="closeDataSheet()" style="background:#888; color:white;">취소</button>
+            <button onclick="saveDataSheet()" style="background:var(--main-color); color:white;">✅ 적용</button>
+        </div>
+    </div>
+</div>
+
+<!-- 미리보기 -->
+<div class="preview-area">
+    <div id="capture-area">
+        <div class="header-line"></div>
+        <h1 class="chart-title inline-editable" id="displayTitle">제목 입력</h1><br>
+        <span class="chart-subtitle inline-editable" id="displaySub">(단위 및 출처 입력)</span>
+        <div id="chart-container">
+            <canvas id="myChart"></canvas>
+            <div id="pie-side-list"></div>
+        </div>
+        <div id="table-container"></div>
+        <div id="displayFootnote" class="inline-editable"></div>
+        <div class="footer-watermark">
+            도해&nbsp;&nbsp;<span id="displayName" class="inline-editable">도해 프로젝트</span>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  전역 변수 & 팔레트
+// ═══════════════════════════════════════════════════════
+const rootStyles = getComputedStyle(document.documentElement);
+const globalFont = rootStyles.getPropertyValue('--main-font').trim() || 'Pretendard, sans-serif';
+Chart.defaults.font.family = globalFont;
+
+let myChart = null;
+let activePaletteKey = 'dohae';
+
+const PALETTE_PRESETS = {
+    dohae: {
+        label: '도해 기본', main: '#433F8E', accent: '#2EAAB1',
+        bar: ['#433F8E','#2EAAB1','#FF7A4F','#FAD378','#A19FC4'],
+        line: ['#433F8E','#2EAAB1','#FF7A4F','#FAD378'],
+        pie: ['#433F8E','#2EAAB1','#FF7A4F','#FAD378','#A19FC4','#D1EAEB']
+    },
+    economyBlue: {
+        label: '경제 지표용', main: '#1F6FEB', accent: '#4FA3FF',
+        bar: ['#1F6FEB','#4FA3FF','#8EC5FF','#2F4154'],
+        line: ['#1F6FEB','#0B3D91','#4FA3FF','#7B8794'],
+        pie: ['#1F6FEB','#4FA3FF','#8EC5FF','#BFDFFF','#6E879F','#D6E9FF']
+    },
+    riskRed: {
+        label: '경고·위험 강조', main: '#C1121F', accent: '#FF6B35',
+        bar: ['#C1121F','#433F8E','#FF6B35','#7A0C12'],
+        line: ['#C1121F','#111111','#FF6B35','#777777'],
+        pie: ['#C1121F','#433F8E','#FF6B35','#777777','#AAAAAA','#DDDDDD']
+    },
+    compareGray: {
+        label: '비교 대조용', main: '#433F8E', accent: '#555555',
+        bar: ['#433F8E','#555555','#AFAFAF','#222222'],
+        line: ['#433F8E','#555555','#999999','#222222'],
+        pie: ['#433F8E','#555555','#888888','#BBBBBB','#D6D6D6','#EEEEEE']
+    }
+};
+
+// ═══════════════════════════════════════════════════════
+//  즐겨찾기 (localStorage)
+// ═══════════════════════════════════════════════════════
+const FAV_KEY = 'dohaeGraphicDeskFavoritesV2';
+function getFavorites() { try { return JSON.parse(localStorage.getItem(FAV_KEY) || '{}'); } catch(e) { return {}; } }
+function setFavorites(f) { localStorage.setItem(FAV_KEY, JSON.stringify(f)); }
+function updateFavoriteSelect() {
+    const sel = document.getElementById('favoriteSelect');
+    if (!sel) return;
+    const favs = getFavorites();
+    const names = Object.keys(favs).sort((a,b)=>a.localeCompare(b,'ko'));
+    sel.innerHTML = names.length ? names.map(n=>`<option value="${n}">${n}</option>`).join('') : '<option value="">저장된 설정 없음</option>';
+}
+function getState() {
+    return {
+        chartType: val('chartType'), title: val('titleInput'), sub: val('subInput'),
+        labels: val('labelsInput'), n1:val('dataName1'), d1:val('dataInput1'),
+        n2:val('dataName2'), d2:val('dataInput2'), n3:val('dataName3'), d3:val('dataInput3'),
+        n4:val('dataName4'), d4:val('dataInput4'), yMin:val('yMin'), yMax:val('yMax'),
+        footnote:val('footnoteInput'), reporter:val('nameInput'),
+        labelDisplay:val('labelDisplayType'), koreanNum:val('koreanNumberType'),
+        fontSize:val('globalFontSize'), palette:activePaletteKey,
+        tableData:val('tableDataInput')
     };
-    let activePaletteKey = 'dohae';
+}
+function setState(s) {
+    if (!s) return;
+    setVal('chartType', s.chartType); setVal('titleInput', s.title); setVal('subInput', s.sub);
+    setVal('labelsInput', s.labels); setVal('dataName1', s.n1); setVal('dataInput1', s.d1);
+    setVal('dataName2', s.n2); setVal('dataInput2', s.d2); setVal('dataName3', s.n3); setVal('dataInput3', s.d3);
+    setVal('dataName4', s.n4); setVal('dataInput4', s.d4); setVal('yMin', s.yMin); setVal('yMax', s.yMax);
+    setVal('footnoteInput', s.footnote); setVal('nameInput', s.reporter);
+    setVal('labelDisplayType', s.labelDisplay); setVal('koreanNumberType', s.koreanNum);
+    setVal('globalFontSize', s.fontSize || '20');
+    document.getElementById('fontSizeDisplay').textContent = (s.fontSize||'20')+'px';
+    setVal('tableDataInput', s.tableData);
+    if (s.palette) applyPalettePreset(s.palette, true);
+    toggleInputs(); updateOutput();
+}
+function saveFavoriteSettings() {
+    const name = (val('favoriteName') || '').trim() || '내 설정';
+    const favs = getFavorites(); favs[name] = getState(); setFavorites(favs);
+    updateFavoriteSelect();
+    const sel = document.getElementById('favoriteSelect');
+    if (sel) sel.value = name;
+    updateHistoryStatus(`저장 완료: ${name}`);
+}
+function loadFavoriteSettings() {
+    const name = val('favoriteSelect');
+    const favs = getFavorites();
+    if (!name || !favs[name]) { alert('불러올 설정이 없습니다.'); return; }
+    setState(favs[name]);
+}
+function deleteFavoriteSettings() {
+    const name = val('favoriteSelect');
+    const favs = getFavorites();
+    if (!name || !favs[name]) { alert('삭제할 설정이 없습니다.'); return; }
+    delete favs[name]; setFavorites(favs); updateFavoriteSelect();
+}
 
-    const FAVORITE_STORAGE_KEY = 'dohaeGraphicDeskFavoritesV1';
-    const HISTORY_LIMIT = 50;
-    let undoStack = [];
-    let isRestoringState = false;
-    let historyDebounceTimer = null;
+// ═══════════════════════════════════════════════════════
+//  히스토리 (되돌리기)
+// ═══════════════════════════════════════════════════════
+const HISTORY_LIMIT = 50;
+let undoStack = [];
+let historyTimer = null;
+function recordHistory(label='작업') {
+    const snap = JSON.stringify(getState());
+    const last = undoStack.length ? JSON.stringify(undoStack[undoStack.length-1].state) : '';
+    if (snap === last) return;
+    undoStack.push({ label, state: getState(), time: Date.now() });
+    if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
+    updateHistoryStatus();
+}
+function scheduleHistory(label='입력') {
+    clearTimeout(historyTimer);
+    historyTimer = setTimeout(() => recordHistory(label), 400);
+}
+function undoLastChange() {
+    clearTimeout(historyTimer);
+    if (undoStack.length <= 1) { updateHistoryStatus('되돌릴 작업이 없습니다.'); return; }
+    undoStack.pop();
+    setState(undoStack[undoStack.length-1].state);
+    updateHistoryStatus('되돌리기 완료');
+}
+function updateHistoryStatus(msg) {
+    const el = document.getElementById('historyStatus');
+    const cnt = Math.max(0, undoStack.length - 1);
+    if (el) el.textContent = msg || `되돌리기 가능: ${cnt}단계 · Ctrl+Z`;
+}
 
-    let initializedChartTypes = new Set();
-    const NORMAL_CHART_DPR = Math.max(window.devicePixelRatio || 1, 1);
-    const EXPORT_CHART_DPR = Math.max(4, NORMAL_CHART_DPR);
+// ═══════════════════════════════════════════════════════
+//  유틸리티
+// ═══════════════════════════════════════════════════════
+function val(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function setVal(id, v) { const el = document.getElementById(id); if (el && v !== undefined && v !== null) el.value = v; }
+function show(id) { const el = document.getElementById(id); if (el) el.style.display = ''; }
+function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+function showBlock(id) { const el = document.getElementById(id); if (el) el.style.display = 'block'; }
 
-    function waitForNextPaint() {
-        return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+function parseLabelSeries(raw) {
+    const text = String(raw || '').trim();
+    if (!text) return [];
+    if (text.includes('\t')) return text.split(/\t+/).map(s => s.trim()).filter(Boolean);
+    if (text.includes('\n') && !text.includes(',')) return text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+    return text.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+function parseNumericSeries(raw) {
+    const text = String(raw || '').trim();
+    if (!text) return [];
+    // 탭/줄바꿈 우선
+    if (text.includes('\t')) return text.split(/\t+/).map(s=>parseFloat(s.replace(/[^\d.-]/g,''))).filter(v=>!isNaN(v));
+    if (text.includes('\n') && !text.includes(',')) return text.split(/\r?\n/).map(s=>parseFloat(s.replace(/[^\d.-]/g,''))).filter(v=>!isNaN(v));
+    return text.split(',').map(s=>parseFloat(s.replace(/[^\d.-]/g,''))).filter(v=>!isNaN(v));
+}
+
+function getActivePalette() { return PALETTE_PRESETS[activePaletteKey] || PALETTE_PRESETS.dohae; }
+
+function applyPalettePreset(key, skipUpdate=false) {
+    if (!PALETTE_PRESETS[key]) key = 'dohae';
+    activePaletteKey = key;
+    const p = getActivePalette();
+    document.documentElement.style.setProperty('--main-color', p.main);
+    document.documentElement.style.setProperty('--accent-color', p.accent);
+    document.querySelectorAll('.palette-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.palette === key));
+    if (!skipUpdate) updateOutput();
+}
+
+function formatKoreanNumber(n, subText='') {
+    const num = parseFloat(n);
+    if (isNaN(num)) return String(n);
+    const isPercent = subText && subText.includes('%');
+    if (isPercent) return num.toLocaleString('ko-KR');
+    const abs = Math.abs(num);
+    const sign = num < 0 ? '-' : '';
+    if (abs >= 1e12) {
+        const jo = Math.floor(abs / 1e12);
+        const rem = abs % 1e12;
+        const eok = rem >= 1e8 ? Math.floor(rem / 1e8) : 0;
+        return sign + jo + '조' + (eok ? eok + '억' : '');
+    }
+    if (abs >= 1e8) {
+        const eok = Math.floor(abs / 1e8);
+        const rem = abs % 1e8;
+        const man = rem >= 1e4 ? Math.floor(rem / 1e4) : 0;
+        return sign + eok + '억' + (man ? man + '만' : '');
+    }
+    if (abs >= 1e4) {
+        const man = Math.floor(abs / 1e4);
+        return sign + man + '만';
+    }
+    return num.toLocaleString('ko-KR');
+}
+
+function formatLabel(value, subText='', korType='apply') {
+    if (korType === 'apply') return formatKoreanNumber(value, subText);
+    return Number.isFinite(value) ? value.toLocaleString('ko-KR') : String(value);
+}
+
+// ═══════════════════════════════════════════════════════
+//  ★ 핵심: 엑셀 데이터 파싱 (완전 새로 작성)
+// ═══════════════════════════════════════════════════════
+function parseExcelData() {
+    const rawText = document.getElementById('geminiInput').value;
+    if (!rawText.trim()) {
+        setParseSummary('붙여넣은 내용이 없습니다. 엑셀에서 복사 후 붙여넣기 해주세요.', 'error');
+        return false;
     }
 
-    async function setChartPixelRatio(pixelRatio) {
-        if (!myChart) return;
-        myChart.options.devicePixelRatio = pixelRatio;
-        myChart.resize();
-        myChart.update('none');
-        await waitForNextPaint();
+    const lines = rawText.split(/\r?\n/).filter(l => l.trim() !== '');
+    if (lines.length === 0) {
+        setParseSummary('데이터를 인식할 수 없습니다.', 'error');
+        return false;
     }
 
-    function stabilizeChartLayout() {
-        if (!myChart) return;
+    // 구분자: 탭이 있으면 탭, 없으면 콤마
+    const delimiter = lines.some(l => l.includes('\t')) ? '\t' : ',';
 
-        const resizeAndUpdate = () => {
-            if (!myChart) return;
-            myChart.resize();
-            myChart.update('none');
-        };
+    let startRow = 0;
+    let title = '';
+    let headerNames = [];
+    let labels = [], d1=[], d2=[], d3=[], d4=[];
+    let n1='데이터 1', n2='데이터 2', n3='데이터 3', n4='데이터 4';
 
-        requestAnimationFrame(() => {
-            requestAnimationFrame(resizeAndUpdate);
-        });
-        window.setTimeout(resizeAndUpdate, 80);
+    // 첫 줄이 단일 셀(제목)인지 확인
+    const firstCols = lines[0].split(delimiter).map(s=>s.trim());
+    if (firstCols.length === 1) {
+        title = firstCols[0].replace(/[*`#>_]/g, '').trim();
+        startRow = 1;
     }
 
-    function getSelectedExportScale() {
-        const exportScaleEl = document.getElementById('exportScale');
-        const exportScale = exportScaleEl ? parseInt(exportScaleEl.value, 10) : 3;
-        if (exportScale === 4) return 4;
-        return exportScale === 2 ? 2 : 3;
-    }
-
-    function getFixedExportSize() {
-        const captureDiv = document.getElementById('capture-area');
-        const baseWidth = 750;
-        const rect = captureDiv.getBoundingClientRect();
-        const baseHeight = Math.max(Math.round(rect.height), captureDiv.scrollHeight, captureDiv.offsetHeight);
-        const exportScale = getSelectedExportScale();
-        return {
-            exportScale,
-            baseWidth,
-            baseHeight,
-            exportWidth: baseWidth * exportScale,
-            exportHeight: baseHeight * exportScale
-        };
-    }
-
-    const QUICK_MENU_CONFIG = {
-        input: { buttonId: 'quickInputBtn', sectionIds: ['sectionGemini'] },
-        dataedit: { buttonId: 'quickDataEditBtn', sectionIds: ['sectionDataEdit'] },
-        design: { buttonId: 'quickDesignBtn', sectionIds: ['sectionDesign'] },
-        save: { buttonId: 'quickSaveBtn', sectionIds: ['sectionExport'] }
-    };
-
-    function syncQuickMenuButtons(activeKey = '') {
-        Object.entries(QUICK_MENU_CONFIG).forEach(([menuKey, config]) => {
-            const btn = document.getElementById(config.buttonId);
-            if (!btn) return;
-            const defaultLabel = btn.dataset.defaultLabel || btn.textContent;
-            const openLabel = btn.dataset.openLabel || defaultLabel;
-            btn.classList.toggle('active', menuKey === activeKey);
-            btn.textContent = menuKey === activeKey ? openLabel : defaultLabel;
-        });
-    }
-
-    function closeOtherQuickMenus(activeKey = '') {
-        Object.entries(QUICK_MENU_CONFIG).forEach(([menuKey, config]) => {
-            if (menuKey === activeKey) return;
-            config.sectionIds.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) section.open = false;
-            });
-        });
-    }
-
-    function getQuickMenuOpenState(menuKey) {
-        const config = QUICK_MENU_CONFIG[menuKey];
-        if (!config) return false;
-        return config.sectionIds.some(sectionId => {
-            const section = document.getElementById(sectionId);
-            return !!(section && section.open);
-        });
-    }
-
-    function openQuickMenu(menuKey, options = {}) {
-        const config = QUICK_MENU_CONFIG[menuKey];
-        if (!config) return;
-        closeOtherQuickMenus(menuKey);
-        let firstSection = null;
-        config.sectionIds.forEach(sectionId => {
-            const section = document.getElementById(sectionId);
-            if (!section) return;
-            section.open = true;
-            if (!firstSection) firstSection = section;
-        });
-        syncQuickMenuButtons(menuKey);
-        if (options.scroll !== false && firstSection) {
-            firstSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // 헤더 행 확인: 두 번째 열 값이 숫자가 아니면 헤더로 간주
+    if (startRow < lines.length) {
+        const hCols = lines[startRow].split(delimiter).map(s=>s.trim());
+        const secondVal = hCols.length > 1 ? hCols[1].replace(/[^\d.-]/g,'') : '';
+        if (hCols.length > 1 && (secondVal === '' || isNaN(parseFloat(secondVal)))) {
+            headerNames = hCols;
+            if (hCols[1]) n1 = hCols[1].replace(/[*`#>_]/g,'').trim();
+            if (hCols[2]) n2 = hCols[2].replace(/[*`#>_]/g,'').trim();
+            if (hCols[3]) n3 = hCols[3].replace(/[*`#>_]/g,'').trim();
+            if (hCols[4]) n4 = hCols[4].replace(/[*`#>_]/g,'').trim();
+            startRow++;
         }
-        if (options.highlight !== false && firstSection) {
-            highlightControlSection(firstSection, options.scroll === false ? 0 : 220);
-        }
     }
 
-    function closeQuickMenu(menuKey) {
-        const config = QUICK_MENU_CONFIG[menuKey];
-        if (!config) return;
-        config.sectionIds.forEach(sectionId => {
-            const section = document.getElementById(sectionId);
-            if (section) section.open = false;
+    // 데이터 행 파싱
+    for (let i = startRow; i < lines.length; i++) {
+        const cols = lines[i].split(delimiter).map(s=>s.trim());
+        if (!cols[0]) continue;
+        labels.push(cols[0].replace(/[*`#>_]/g,'').trim());
+        const parseNum = (s) => { if(!s) return ''; const n = parseFloat(String(s).replace(/[^\d.-]/g,'')); return isNaN(n)?'':String(n); };
+        if (cols.length >= 2) d1.push(parseNum(cols[1]));
+        if (cols.length >= 3) d2.push(parseNum(cols[2]));
+        if (cols.length >= 4) d3.push(parseNum(cols[3]));
+        if (cols.length >= 5) d4.push(parseNum(cols[4]));
+    }
+
+    if (labels.length === 0) {
+        setParseSummary('항목을 인식하지 못했습니다. 탭 또는 콤마로 구분된 데이터인지 확인해주세요.', 'error');
+        return false;
+    }
+
+    // 입력칸에 반영
+    if (title) setVal('titleInput', title);
+    setVal('labelsInput', labels.join(', '));
+    setVal('dataName1', n1); setVal('dataInput1', d1.filter(v=>v!=='').join(', '));
+    if (d2.some(v=>v!=='')) { setVal('dataName2', n2); setVal('dataInput2', d2.filter(v=>v!=='').join(', ')); }
+    else { setVal('dataName2',''); setVal('dataInput2',''); }
+    if (d3.some(v=>v!=='')) { setVal('dataName3', n3); setVal('dataInput3', d3.filter(v=>v!=='').join(', ')); }
+    else { setVal('dataName3',''); setVal('dataInput3',''); }
+    if (d4.some(v=>v!=='')) { setVal('dataName4', n4); setVal('dataInput4', d4.filter(v=>v!=='').join(', ')); }
+    else { setVal('dataName4',''); setVal('dataInput4',''); }
+
+    // 다중 데이터면 차트 종류 자동 조정
+    const curType = val('chartType');
+    if (d2.some(v=>v!=='') && !['multi-bar','multi-line','h-multi-bar','stacked-bar','combo','table','list','timeline'].includes(curType)) {
+        if (curType === 'line') setVal('chartType','multi-line');
+        else setVal('chartType','multi-bar');
+    }
+
+    toggleInputs();
+    updateOutput();
+    recordHistory('엑셀 데이터 불러오기');
+
+    const dsCount = [d1,d2,d3,d4].filter(d=>d.some(v=>v!=='')).length;
+    setParseSummary(`✅ 성공! 항목 ${labels.length}개, 데이터 묶음 ${dsCount}개를 인식했습니다.`, 'ok');
+
+    const btn = document.getElementById('autoFillBtn');
+    if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = '✅ 데이터 반영 완료!';
+        btn.style.backgroundColor = '#1d6b37';
+        setTimeout(() => { btn.textContent = orig; btn.style.backgroundColor = 'var(--main-color)'; }, 2200);
+    }
+    return true;
+}
+
+function setParseSummary(msg, status='ok') {
+    const el = document.getElementById('parseSummary');
+    if (!el) return;
+    el.className = 'parse-summary' + (status !== 'ok' ? ' '+status : '');
+    el.textContent = msg;
+}
+
+// ═══════════════════════════════════════════════════════
+//  입력 UI 전환
+// ═══════════════════════════════════════════════════════
+function chartUsesMultipleDatasets(type) {
+    return ['multi-bar','h-multi-bar','stacked-bar','h-stacked-bar','multi-line','combo','stacked-combo','multi-combo'].includes(type);
+}
+
+function toggleInputs() {
+    const type = val('chartType');
+    const isTable = ['table','list','timeline'].includes(type);
+
+    if (isTable) {
+        hide('chartInputs'); showBlock('tableInputs');
+    } else {
+        showBlock('chartInputs'); hide('tableInputs');
+    }
+
+    const multi = chartUsesMultipleDatasets(type) || parseNumericSeries(val('dataInput2')).length > 0;
+    const show3 = multi || parseNumericSeries(val('dataInput3')).length > 0;
+    const show4 = show3 && parseNumericSeries(val('dataInput4')).length > 0;
+
+    ['dataset2Group','dataset3Group','dataset4Group'].forEach(id => hide(id));
+    if (multi || type === 'combo') { show('dataset2Group'); show('dataset3Group'); }
+    if (show4) show('dataset4Group');
+
+    const axisTypes = ['bar','line','multi-bar','stacked-bar','h-bar','h-multi-bar','h-stacked-bar','multi-line','combo'];
+    if (axisTypes.includes(type)) show('axisSettingGroup'); else hide('axisSettingGroup');
+
+    // 시트 모달 헤더 업데이트
+    const s1 = val('dataName1')||'데이터 1';
+    const s2 = val('dataName2')||'데이터 2';
+    const s3 = val('dataName3')||'데이터 3';
+    const s4 = val('dataName4')||'데이터 4';
+    ['sheetName1','sheetName2','sheetName3','sheetName4'].forEach((id,i)=>{
+        const el=document.getElementById(id); if(el) el.textContent=[s1,s2,s3,s4][i];
+    });
+    ['sheetTh2','sheetTh3','sheetTh4'].forEach((id,i)=>{
+        const el=document.getElementById(id); if(el) el.style.display = (i===0?multi:i===1?show3:show4)?'':'none';
+    });
+}
+
+function handleChartTypeChange() {
+    toggleInputs();
+    updateOutput();
+}
+
+// ═══════════════════════════════════════════════════════
+//  데이터 시트 모달
+// ═══════════════════════════════════════════════════════
+function openDataSheet() {
+    const labels = parseLabelSeries(val('labelsInput'));
+    const d1 = parseNumericSeries(val('dataInput1'));
+    const d2 = parseNumericSeries(val('dataInput2'));
+    const d3 = parseNumericSeries(val('dataInput3'));
+    const d4 = parseNumericSeries(val('dataInput4'));
+    const maxLen = Math.max(labels.length, d1.length, d2.length, d3.length, d4.length, 5);
+
+    const tbody = document.getElementById('modalTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    for (let i = 0; i < maxLen; i++) {
+        const showD2 = d2.length > 0;
+        const showD3 = d3.length > 0;
+        const showD4 = d4.length > 0;
+        const d2Cell = showD2 ? `<td><input value="${d2[i]??''}"></td>` : '';
+        const d3Cell = showD3 ? `<td><input value="${d3[i]??''}"></td>` : '';
+        const d4Cell = showD4 ? `<td><input value="${d4[i]??''}"></td>` : '';
+        tbody.insertAdjacentHTML('beforeend',
+            `<tr><td><input value="${labels[i]??''}"></td><td><input value="${d1[i]??''}"></td>${d2Cell}${d3Cell}${d4Cell}</tr>`);
+    }
+    document.getElementById('sheetModal').style.display = 'flex';
+}
+
+function closeDataSheet() { document.getElementById('sheetModal').style.display = 'none'; }
+
+function addRow() {
+    const tbody = document.getElementById('modalTbody');
+    if (!tbody) return;
+    const colCount = tbody.querySelector('tr') ? tbody.querySelector('tr').querySelectorAll('td').length : 2;
+    let cells = '<td><input></td>'.repeat(colCount);
+    tbody.insertAdjacentHTML('beforeend', `<tr>${cells}</tr>`);
+}
+
+function saveDataSheet() {
+    const rows = document.querySelectorAll('#modalTbody tr');
+    const labels=[], d1=[], d2=[], d3=[], d4=[];
+    rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        if (!inputs[0] || !inputs[0].value.trim()) return;
+        labels.push(inputs[0].value.trim());
+        if (inputs[1]) d1.push(inputs[1].value.trim());
+        if (inputs[2]) d2.push(inputs[2].value.trim());
+        if (inputs[3]) d3.push(inputs[3].value.trim());
+        if (inputs[4]) d4.push(inputs[4].value.trim());
+    });
+    setVal('labelsInput', labels.join(', '));
+    setVal('dataInput1', d1.join(', '));
+    setVal('dataInput2', d2.join(', '));
+    setVal('dataInput3', d3.join(', '));
+    setVal('dataInput4', d4.join(', '));
+    closeDataSheet();
+    toggleInputs();
+    updateOutput();
+    recordHistory('데이터 시트 편집');
+}
+
+// ═══════════════════════════════════════════════════════
+//  예시 데이터 불러오기
+// ═══════════════════════════════════════════════════════
+function loadExampleData() {
+    setVal('titleInput', '연도별 학생 수 변화');
+    setVal('subInput', '(단위: 천 명, 출처: 교육부 2024)');
+    setVal('labelsInput', '2020년, 2021년, 2022년, 2023년, 2024년');
+    setVal('dataName1', '초등학교'); setVal('dataInput1', '2693, 2672, 2664, 2654, 2638');
+    setVal('dataName2', '중학교'); setVal('dataInput2', '1341, 1325, 1303, 1288, 1271');
+    setVal('dataName3', ''); setVal('dataInput3', '');
+    setVal('dataName4', ''); setVal('dataInput4', '');
+    setVal('footnoteInput', '');
+    setVal('nameInput', '도해 프로젝트');
+    setVal('chartType', 'multi-bar');
+    toggleInputs();
+    updateOutput();
+    recordHistory('예시 데이터 불러오기');
+}
+
+// ═══════════════════════════════════════════════════════
+//  ★ 핵심: 차트 렌더링 (updateOutput)
+// ═══════════════════════════════════════════════════════
+function updateOutput() {
+    const type = val('chartType');
+    const titleText = val('titleInput') || '';
+    const subText = val('subInput') || '';
+    const footnoteText = val('footnoteInput') || '';
+    const nameText = val('nameInput') || '';
+    const korType = val('koreanNumberType') || 'apply';
+    const labelDisplay = val('labelDisplayType') || 'all';
+    const fontSize = parseInt(val('globalFontSize') || '20');
+
+    // 텍스트 영역 업데이트
+    const dispTitle = document.getElementById('displayTitle');
+    const dispSub = document.getElementById('displaySub');
+    const dispFootnote = document.getElementById('displayFootnote');
+    const dispName = document.getElementById('displayName');
+    if (dispTitle && dispTitle.getAttribute('contenteditable') !== 'true') dispTitle.textContent = titleText || '제목 입력';
+    if (dispSub && dispSub.getAttribute('contenteditable') !== 'true') dispSub.textContent = subText || '';
+    if (dispName && dispName.getAttribute('contenteditable') !== 'true') dispName.textContent = nameText || '';
+    if (dispFootnote) {
+        if (footnoteText) { dispFootnote.textContent = footnoteText; dispFootnote.style.display = 'block'; }
+        else dispFootnote.style.display = 'none';
+    }
+
+    // 표/리스트/타임라인
+    if (['table','list','timeline'].includes(type)) {
+        document.getElementById('chart-container').style.display = 'none';
+        document.getElementById('table-container').style.display = 'block';
+        if (myChart) { myChart.destroy(); myChart = null; }
+        renderTable(type, fontSize, korType);
+        return;
+    }
+
+    document.getElementById('chart-container').style.display = 'block';
+    document.getElementById('table-container').style.display = 'none';
+
+    const labels = parseLabelSeries(val('labelsInput'));
+    const d1 = parseNumericSeries(val('dataInput1'));
+    const d2 = parseNumericSeries(val('dataInput2'));
+    const d3 = parseNumericSeries(val('dataInput3'));
+    const d4 = parseNumericSeries(val('dataInput4'));
+    const n1 = val('dataName1') || '데이터 1';
+    const n2 = val('dataName2') || '데이터 2';
+    const n3 = val('dataName3') || '데이터 3';
+    const n4 = val('dataName4') || '데이터 4';
+    const yMin = val('yMin') ? parseFloat(val('yMin')) : undefined;
+    const yMax = val('yMax') ? parseFloat(val('yMax')) : undefined;
+
+    const palette = getActivePalette();
+
+    // 데이터셋 라벨 플러그인 설정
+    const makeLabelPlugin = (dsIndex, dataArr) => ({
+        display: (context) => {
+            if (labelDisplay === 'none') return false;
+            if (labelDisplay === 'last') return context.dataIndex === dataArr.length - 1;
+            return true;
+        },
+        formatter: (value) => formatLabel(value, subText, korType),
+        font: { size: fontSize - 2, weight: '900', family: globalFont },
+        color: '#111',
+        anchor: type.startsWith('h-') ? 'end' : 'end',
+        align: type.startsWith('h-') ? 'right' : 'top',
+        offset: 4,
+        clip: false
+    });
+
+    let datasets = [];
+    const isHorizontal = type.startsWith('h-');
+    const isStacked = type.includes('stacked');
+    const isPie = type === 'pie';
+
+    if (isPie) {
+        datasets = [{
+            data: d1.length ? d1 : [1],
+            backgroundColor: palette.pie,
+            borderWidth: 2,
+            borderColor: '#fff',
+            hoverOffset: 10
+        }];
+    } else if (type === 'line' || type === 'multi-line') {
+        const addLine = (data, name, colorIdx) => ({
+            label: name, data,
+            borderColor: palette.line[colorIdx] || palette.line[0],
+            backgroundColor: (palette.line[colorIdx] || palette.line[0]) + '22',
+            borderWidth: 3, pointRadius: 5, pointBackgroundColor: palette.line[colorIdx] || palette.line[0],
+            tension: 0.1, fill: false,
+            datalabels: makeLabelPlugin(colorIdx, data)
         });
-        syncQuickMenuButtons('');
-    }
-
-    function toggleQuickMenu(menuKey) {
-        if (getQuickMenuOpenState(menuKey)) {
-            closeQuickMenu(menuKey);
-            return;
-        }
-        openQuickMenu(menuKey, { scroll: true });
-    }
-
-    function scrollToControlSection(sectionId) {
-        const menuKey = Object.keys(QUICK_MENU_CONFIG).find(key => QUICK_MENU_CONFIG[key].sectionIds.includes(sectionId));
-        if (menuKey) {
-            openQuickMenu(menuKey, { scroll: true });
-            return;
-        }
-        const section = document.getElementById(sectionId);
-        if (!section) return;
-        section.open = true;
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        highlightControlSection(section, 220);
-    }
-
-    const CONTROL_SECTION_ICONS = {
-        input: '✍️',
-        dataedit: '📊',
-        design: '🎨',
-        save: '💾'
-    };
-
-    function highlightControlSection(section, delay = 0) {
-        if (!section) return;
-        window.setTimeout(() => {
-            section.classList.remove('section-attention');
-            void section.offsetWidth;
-            section.classList.add('section-attention');
-            window.setTimeout(() => section.classList.remove('section-attention'), 1150);
-        }, delay);
-    }
-
-    function createControlSection(id, summaryText, open = false, menuKey = '') {
-        const details = document.createElement('details');
-        details.className = 'control-section';
-        details.id = id;
-        if (menuKey) details.dataset.menuKey = menuKey;
-        if (open) details.open = true;
-        const summary = document.createElement('summary');
-        const titleWrap = document.createElement('span');
-        titleWrap.className = 'control-section-title';
-
-        const icon = document.createElement('span');
-        icon.className = 'control-section-icon';
-        icon.setAttribute('aria-hidden', 'true');
-        icon.textContent = CONTROL_SECTION_ICONS[menuKey] || '•';
-
-        const label = document.createElement('span');
-        label.className = 'control-section-label';
-        label.textContent = summaryText;
-
-        titleWrap.appendChild(icon);
-        titleWrap.appendChild(label);
-        summary.appendChild(titleWrap);
-        const body = document.createElement('div');
-        body.className = 'control-section-body';
-        details.appendChild(summary);
-        details.appendChild(body);
-        return { details, body };
-    }
-
-    function appendExisting(body, selectors) {
-        selectors.forEach(selector => {
-            const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
-            if (el) body.appendChild(el);
+        if (d1.length) datasets.push(addLine(d1, n1, 0));
+        if (d2.length && type === 'multi-line') datasets.push(addLine(d2, n2, 1));
+        if (d3.length && type === 'multi-line') datasets.push(addLine(d3, n3, 2));
+        if (d4.length && type === 'multi-line') datasets.push(addLine(d4, n4, 3));
+    } else if (type === 'combo') {
+        if (d1.length) datasets.push({
+            type: 'bar', label: n1, data: d1,
+            backgroundColor: palette.bar[0] + 'cc', borderColor: palette.bar[0], borderWidth: 1,
+            datalabels: makeLabelPlugin(0, d1)
         });
-    }
-
-    function createMenuSubhead(title, description) {
-        const wrap = document.createElement('div');
-        wrap.className = 'menu-subhead';
-
-        const titleEl = document.createElement('div');
-        titleEl.className = 'menu-subhead-title';
-        titleEl.textContent = title;
-        wrap.appendChild(titleEl);
-
-        if (description) {
-            const descEl = document.createElement('div');
-            descEl.className = 'menu-subhead-desc';
-            descEl.textContent = description;
-            wrap.appendChild(descEl);
-        }
-
-        return wrap;
-    }
-
-    function bindExclusiveMenuBehavior(detailsEl) {
-        if (!detailsEl || detailsEl.dataset.exclusiveBound === 'true') return;
-        detailsEl.addEventListener('toggle', () => {
-            const menuKey = detailsEl.dataset.menuKey || '';
-            if (!menuKey) return;
-            if (detailsEl.open) {
-                closeOtherQuickMenus(menuKey);
-                syncQuickMenuButtons(menuKey);
-            } else {
-                const hasOpenMenu = Object.keys(QUICK_MENU_CONFIG).some(key => getQuickMenuOpenState(key));
-                if (!hasOpenMenu) syncQuickMenuButtons('');
-            }
+        if (d2.length) datasets.push({
+            type: 'line', label: n2, data: d2,
+            borderColor: palette.line[1], backgroundColor: palette.line[1]+'22',
+            borderWidth: 3, pointRadius: 5, tension: 0.1, fill: false,
+            datalabels: makeLabelPlugin(1, d2)
         });
-        detailsEl.dataset.exclusiveBound = 'true';
-    }
-
-    function setupStickyControlHeader(panel, quickBar) {
-        if (!panel || !quickBar) return null;
-        let stickyHeader = document.getElementById('panelStickyHeader');
-        if (stickyHeader) return stickyHeader;
-        const title = panel.querySelector('h2');
-        const historyStatus = document.getElementById('historyStatus');
-        stickyHeader = document.createElement('div');
-        stickyHeader.className = 'panel-sticky-header';
-        stickyHeader.id = 'panelStickyHeader';
-        if (title) panel.insertBefore(stickyHeader, title);
-        else panel.insertBefore(stickyHeader, panel.firstChild);
-        [title, quickBar, historyStatus].forEach(el => {
-            if (el) stickyHeader.appendChild(el);
+    } else {
+        // bar / multi-bar / stacked-bar / h-bar / h-multi-bar / h-stacked-bar
+        const addBar = (data, name, colorIdx) => ({
+            label: name, data,
+            backgroundColor: palette.bar[colorIdx] || palette.bar[0],
+            borderWidth: 0, borderRadius: 3,
+            datalabels: makeLabelPlugin(colorIdx, data)
         });
-        return stickyHeader;
+        if (d1.length) datasets.push(addBar(d1, n1, 0));
+        if (d2.length && chartUsesMultipleDatasets(type)) datasets.push(addBar(d2, n2, 1));
+        if (d3.length && chartUsesMultipleDatasets(type)) datasets.push(addBar(d3, n3, 2));
+        if (d4.length && chartUsesMultipleDatasets(type)) datasets.push(addBar(d4, n4, 3));
     }
 
-    function buildFriendlyControlMenu() {
-        const panel = document.querySelector('.control-panel');
-        const quickBar = document.getElementById('quickActionBar');
-        if (!panel || panel.dataset.menuBuilt === 'true' || !quickBar) return;
-        const stickyHeader = setupStickyControlHeader(panel, quickBar);
+    // 차트 타입 결정
+    let chartJsType = 'bar';
+    if (isPie) chartJsType = 'doughnut';
+    else if (type === 'line' || type === 'multi-line') chartJsType = 'line';
+    else if (type === 'combo') chartJsType = 'bar';
+    else if (isHorizontal) chartJsType = 'bar';
+    else chartJsType = 'bar';
 
-        const geminiSection = createControlSection('sectionGemini', '1) 입력', true, 'input');
-        const dataEditSection = createControlSection('sectionDataEdit', '2) 데이터수정', true, 'dataedit');
-        const designSection = createControlSection('sectionDesign', '3) 디자인', false, 'design');
-        const exportSection = createControlSection('sectionExport', '4) 저장', false, 'save');
+    // 기존 차트 파괴
+    if (myChart) { myChart.destroy(); myChart = null; }
 
-        const anchor = stickyHeader || quickBar;
-        anchor.insertAdjacentElement('afterend', geminiSection.details);
-        geminiSection.details.insertAdjacentElement('afterend', dataEditSection.details);
-        dataEditSection.details.insertAdjacentElement('afterend', designSection.details);
-        designSection.details.insertAdjacentElement('afterend', exportSection.details);
+    const canvas = document.getElementById('myChart');
+    const pieSideList = document.getElementById('pie-side-list');
 
-        appendExisting(geminiSection.body, [
-            '.ai-input-group'
-        ]);
-        dataEditSection.body.appendChild(createMenuSubhead('📊 그래프 데이터', '그래프 종류, X축 항목, 수치 데이터, 표 데이터를 수정합니다.'));
-        appendExisting(dataEditSection.body, [
-            '#chartTypeHeaderRow', '#chartType', '#openSheetBtn', '#chartInputs', '#tableInputs'
-        ]);
-        dataEditSection.body.appendChild(createMenuSubhead('✍️ 텍스트 수정', '제목, 단위·출처, 하단 주석, 제작자명을 수정합니다.'));
-        appendExisting(dataEditSection.body, [
-            '#textSettingGroup', '#footnoteSettingGroup', '#reporterSettingGroup'
-        ]);
-        appendExisting(designSection.body, [
-            '#palettePresetGroup', '#labelSettingGroup', '#koreanNumberGroup', '#highlightSettingGroup',
-            '#fontSizeSettingGroup', '#datasetLabelSizeGroup', '#datasetLabelColorGroup', '#columnWidthSettingGroup'
-        ]);
-        appendExisting(exportSection.body, [
-            '#applyBtn', '#favoriteSettingGroup', '#exportOptionGroup', '#downloadBtn', '#svgDownloadBtn', '#creatorFooter'
-        ]);
-
-        [geminiSection.details, dataEditSection.details, designSection.details, exportSection.details].forEach(bindExclusiveMenuBehavior);
-        syncQuickMenuButtons('input');
-
-        panel.dataset.menuBuilt = 'true';
+    if (isPie && pieSideList) {
+        pieSideList.style.display = 'none';
+        canvas.style.width = '100%';
     }
 
-    function getActivePalette() {
-        return PALETTE_PRESETS[activePaletteKey] || PALETTE_PRESETS.dohae;
-    }
+    const ctx = canvas.getContext('2d');
+    const scaleOptions = {};
 
-    function syncPaletteButtons() {
-        document.querySelectorAll('.palette-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.palette === activePaletteKey);
-        });
-        const hidden = document.getElementById('palettePresetKey');
-        if (hidden) hidden.value = activePaletteKey;
-    }
+    if (!isPie) {
+        const axisFontBase = { size: fontSize - 2, family: globalFont, weight: '700' };
+        const tickCallback = (value) => formatLabel(value, subText, korType);
 
-    function applyPalettePreset(key, options = {}) {
-        if (!PALETTE_PRESETS[key]) key = 'dohae';
-        activePaletteKey = key;
-        const palette = getActivePalette();
-        document.documentElement.style.setProperty('--main-color', palette.main);
-        document.documentElement.style.setProperty('--accent-color', palette.accent);
-        syncPaletteButtons();
-        if (!options.skipUpdate) updateOutput();
-        if (!options.skipHistory) recordHistoryCheckpoint(`팔레트: ${palette.label}`);
-    }
-
-    function parseLabelSeries(raw) {
-        const text = String(raw || '').trim();
-        if (!text) return [];
-        const delimiter = text.includes('\t') ? /\t+/ : (text.includes('\n') && !text.includes(',') ? /\r?\n+/ : /,/);
-        return text.split(delimiter).map(item => item.trim()).filter(item => item !== '');
-    }
-
-    function parseNumericSeries(raw, expectedCount = null) {
-        const text = String(raw || '').trim();
-        if (!text) return [];
-
-        const normalizeToken = (value) => String(value || '')
-            .trim()
-            .replace(/[−–—]/g, '-')
-            .replace(/\s+/g, '')
-            .replace(/，/g, ',');
-        const singleThousandsNumberPattern = /^[-+]?\d{1,3}(?:,\d{3})+(?:\.\d+)?$/;
-        const plainNumberPattern = /^[-+]?\d+(?:\.\d+)?$/;
-        const expectedLength = Number.isInteger(Number(expectedCount)) ? Number(expectedCount) : null;
-        const hasExpectedSeriesLength = expectedLength !== null && expectedLength > 1;
-
-        const parseToken = (token) => {
-            const cleaned = normalizeToken(token);
-            if (!cleaned) return null;
-            if (!plainNumberPattern.test(cleaned) && !singleThousandsNumberPattern.test(cleaned)) return null;
-            const numberValue = Number(cleaned.replace(/,/g, ''));
-            return Number.isFinite(numberValue) ? numberValue : null;
-        };
-
-        const parseTokenList = (list) => list.map(parseToken).filter(value => value !== null);
-        const splitCommaSeries = (value) => String(value || '').split(/[,，]/).map(item => item.trim()).filter(Boolean);
-        const canReadAsPlainSeries = (list) => list.length > 1 && list.every(item => plainNumberPattern.test(normalizeToken(item)));
-
-        const normalizedText = normalizeToken(text);
-        const hasHardDelimiter = /[\t\r\n;]/.test(text);
-
-        if (!hasHardDelimiter && (text.includes(',') || text.includes('，'))) {
-            const commaSeries = splitCommaSeries(text);
-            if (hasExpectedSeriesLength && commaSeries.length === expectedLength && canReadAsPlainSeries(commaSeries)) {
-                return parseTokenList(commaSeries);
-            }
-
-            if (expectedLength === null && !/[,，]\s+/.test(text) && commaSeries.length >= 3 && canReadAsPlainSeries(commaSeries)) {
-                return parseTokenList(commaSeries);
-            }
+        if (isHorizontal) {
+            scaleOptions.x = { stacked: isStacked, grid: { color: '#eee' }, min: yMin, max: yMax, ticks: { font: axisFontBase, callback: tickCallback } };
+            scaleOptions.y = { stacked: isStacked, grid: { display: false }, ticks: { font: { ...axisFontBase, size: Math.max(11, fontSize-4) } } };
+        } else {
+            scaleOptions.x = { stacked: isStacked, grid: { display: false }, ticks: { font: axisFontBase } };
+            scaleOptions.y = { stacked: isStacked, grid: { color: '#eee' }, min: yMin, max: yMax, ticks: { font: axisFontBase, callback: tickCallback } };
         }
+    }
 
-        if (!hasHardDelimiter && singleThousandsNumberPattern.test(normalizedText)) {
-            return [parseToken(text)].filter(value => value !== null);
+    myChart = new Chart(ctx, {
+        type: chartJsType,
+        data: { labels: labels.length ? labels : ['(항목 없음)'], datasets },
+        plugins: [ChartDataLabels],
+        options: {
+            responsive: true, maintainAspectRatio: false, animation: { duration: 400 },
+            indexAxis: isHorizontal ? 'y' : 'x',
+            plugins: {
+                legend: {
+                    display: !isPie,
+                    position: 'bottom',
+                    labels: { font: { size: Math.max(12, fontSize-4), family: globalFont, weight: '700' }, padding: 16 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (ctx2) => {
+                            const v = ctx2.parsed.y ?? ctx2.parsed.x ?? ctx2.parsed;
+                            return ' ' + (ctx2.dataset.label||'') + ': ' + formatLabel(v, subText, korType);
+                        }
+                    }
+                },
+                datalabels: { display: false } // 기본 off, 각 dataset에서 개별 설정
+            },
+            scales: isPie ? {} : scaleOptions
         }
+    });
 
-        const tokens = [];
-        const pushSegment = (segment) => {
-            const trimmed = String(segment || '').trim();
+    // 원 그래프 사이드 리스트
+    if (isPie && labels.length && d1.length && pieSideList) {
+        const total = d1.reduce((s,v)=>s+v,0);
+        pieSideList.innerHTML = `<div class="pie-side-list-inner">${
+            labels.map((lbl,i)=>{
+                const pct = total>0 ? Math.round(d1[i]/total*100) : 0;
+                const color = palette.pie[i % palette.pie.length];
+                return `<div class="pie-side-item">
+                    <span class="pie-side-dot" style="background:${color}"></span>
+                    <span class="pie-side-text">${lbl}<br><strong>${formatLabel(d1[i],subText,korType)} (${pct}%)</strong></span>
+                </div>`;
+            }).join('')
+        }</div>`;
+        pieSideList.style.display = 'block';
+        canvas.style.width = 'calc(100% - 220px)';
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+//  표 렌더링
+// ═══════════════════════════════════════════════════════
+function renderTable(type, fontSize, korType) {
+    const container = document.getElementById('table-container');
+    if (!container) return;
+    const rawText = val('tableDataInput');
+    if (!rawText.trim()) { container.innerHTML = '<p style="color:#999;padding:20px;">표 데이터를 입력해 주세요.</p>'; return; }
+    const lines = rawText.split(/\r?\n/);
+    const palette = getActivePalette();
+
+    if (type === 'list') {
+        let html = '<div class="list-info-container">';
+        let currentGroup = null;
+        lines.forEach(line => {
+            const trimmed = line.trim();
             if (!trimmed) return;
-
-            const compact = normalizeToken(trimmed);
-            if (singleThousandsNumberPattern.test(compact) || !/[，,]/.test(trimmed)) {
-                tokens.push(trimmed);
-                return;
-            }
-
-            if (/[,，]\s+/.test(trimmed)) tokens.push(...trimmed.split(/[,，]\s+/));
-            else tokens.push(...trimmed.split(/[,，]/));
-        };
-
-        if (hasHardDelimiter) {
-            text.split(/[\t\r\n;]+/).forEach(pushSegment);
-        } else if (text.includes(',') || text.includes('，')) {
-            pushSegment(text);
-        } else {
-            const matches = text.match(/[-+]?(?:\d+(?:\.\d+)?)/g) || [];
-            tokens.push(...matches);
-        }
-
-        return parseTokenList(tokens);
-    }
-
-    function normalizeNumberInput(raw, expectedCount = null) {
-        const values = parseNumericSeries(raw, expectedCount);
-        return values.length ? values.join(', ') : String(raw || '').trim();
-    }
-
-    function getStateControlElements() {
-        return Array.from(document.querySelectorAll('.control-panel input, .control-panel textarea, .control-panel select'))
-            .filter(el => el.id && el.type !== 'button' && el.type !== 'submit');
-    }
-
-    function serializeControlState() {
-        const values = {};
-        getStateControlElements().forEach(el => {
-            if (el.type === 'checkbox' || el.type === 'radio') {
-                values[el.id] = { type: el.type, checked: el.checked };
-            } else if (el.multiple) {
-                values[el.id] = { type: 'multiple', value: Array.from(el.selectedOptions).map(option => option.value) };
+            const delimiter = trimmed.includes('\t') ? '\t' : ',';
+            const cols = trimmed.split(delimiter).map(s=>s.trim());
+            if (cols.length === 1 || (cols.length > 1 && !cols[1])) {
+                if (currentGroup) html += '</div>';
+                html += `<div class="list-header-box" style="font-size:${fontSize}px;">${cols[0]}</div><div class="list-item-group">`;
+                currentGroup = cols[0];
             } else {
-                values[el.id] = { type: el.type || el.tagName.toLowerCase(), value: el.value };
+                if (!currentGroup) { html += '<div class="list-item-group">'; currentGroup = '_'; }
+                html += `<div class="list-item" style="font-size:${Math.max(14,fontSize-2)}px;">${cols.join(' — ')}</div>`;
             }
         });
-        values.__activePaletteKey = activePaletteKey;
-        return values;
+        if (currentGroup) html += '</div>';
+        html += '</div>';
+        container.innerHTML = html;
+        return;
     }
 
-    function restoreControlState(state) {
-        if (!state) return;
-        isRestoringState = true;
-        Object.entries(state).forEach(([id, payload]) => {
-            if (id === '__activePaletteKey') return;
-            const el = document.getElementById(id);
-            if (!el || !payload) return;
-            if (payload.type === 'checkbox' || payload.type === 'radio') {
-                el.checked = !!payload.checked;
-            } else if (payload.type === 'multiple') {
-                const values = Array.isArray(payload.value) ? payload.value : [];
-                Array.from(el.options || []).forEach(option => option.selected = values.includes(option.value));
-            } else if ('value' in payload) {
-                el.value = payload.value;
-            }
+    if (type === 'timeline') {
+        let html = '<div class="timeline-container">';
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            const delimiter = trimmed.includes('\t') ? '\t' : ',';
+            const cols = trimmed.split(delimiter).map(s=>s.trim());
+            const left = cols[0] || '';
+            const right = cols.slice(1).join(' ') || '';
+            html += `<div class="timeline-row">
+                <div class="timeline-left" style="font-size:${Math.max(13,fontSize-3)}px;">${left}</div>
+                <div class="timeline-right" style="font-size:${Math.max(13,fontSize-3)}px;">${right}</div>
+            </div>`;
         });
-        if (state.__activePaletteKey) {
-            applyPalettePreset(state.__activePaletteKey, { skipUpdate: true, skipHistory: true });
-        }
-        isRestoringState = false;
-        toggleInputs();
-        updateOutput();
-        updateFavoriteSelect();
-        updateHistoryStatus();
+        html += '</div>';
+        container.innerHTML = html;
+        return;
     }
 
-    function recordHistoryCheckpoint(label = '작업') {
-        if (isRestoringState) return;
-        const snapshot = serializeControlState();
-        const serialized = JSON.stringify(snapshot);
-        const lastSerialized = undoStack.length ? JSON.stringify(undoStack[undoStack.length - 1].state) : '';
-        if (serialized === lastSerialized) return;
-        undoStack.push({ label, state: snapshot, time: Date.now() });
-        if (undoStack.length > HISTORY_LIMIT) undoStack.shift();
-        updateHistoryStatus();
-    }
-
-    function scheduleHistoryCheckpoint(label = '입력 변경') {
-        if (isRestoringState) return;
-        clearTimeout(historyDebounceTimer);
-        historyDebounceTimer = setTimeout(() => recordHistoryCheckpoint(label), 350);
-    }
-
-    function undoLastChange() {
-        clearTimeout(historyDebounceTimer);
-        if (undoStack.length <= 1) {
-            updateHistoryStatus('되돌릴 작업이 없습니다.');
-            return;
-        }
-        undoStack.pop();
-        const previous = undoStack[undoStack.length - 1];
-        restoreControlState(previous.state);
-        updateHistoryStatus(`되돌림: ${previous.label || '이전 상태'}`);
-    }
-
-    function updateHistoryStatus(message) {
-        const status = document.getElementById('historyStatus');
-        const undoBtn = document.getElementById('undoBtn');
-        const count = Math.max(0, undoStack.length - 1);
-        if (undoBtn) undoBtn.disabled = count === 0;
-        if (status) status.textContent = message || `되돌리기 가능 단계: ${count}개 · Ctrl+Z / Command+Z 사용 가능`;
-    }
-
-    function initHistoryControls() {
-        document.addEventListener('input', (event) => {
-            if (event.target && event.target.closest && event.target.closest('.control-panel')) {
-                scheduleHistoryCheckpoint('입력 변경');
-            }
-        });
-        document.addEventListener('change', (event) => {
-            if (event.target && event.target.closest && event.target.closest('.control-panel')) {
-                scheduleHistoryCheckpoint('설정 변경');
-            }
-        });
-        document.addEventListener('keydown', (event) => {
-            const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 'z';
-            if (!isUndo) return;
-            event.preventDefault();
-            undoLastChange();
-        });
-    }
-
-    function getFavorites() {
-        try {
-            return JSON.parse(localStorage.getItem(FAVORITE_STORAGE_KEY) || '{}') || {};
-        } catch (error) {
-            return {};
-        }
-    }
-
-    function setFavorites(favorites) {
-        localStorage.setItem(FAVORITE_STORAGE_KEY, JSON.stringify(favorites || {}));
-    }
-
-    function updateFavoriteSelect() {
-        const select = document.getElementById('favoriteSelect');
-        if (!select) return;
-        const current = select.value;
-        const favorites = getFavorites();
-        const names = Object.keys(favorites).sort((a, b) => a.localeCompare(b, 'ko'));
-        select.innerHTML = names.length
-            ? names.map(name => `<option value="${name.replace(/"/g, '&quot;')}">${name}</option>`).join('')
-            : '<option value="">저장된 설정 없음</option>';
-        if (names.includes(current)) select.value = current;
-    }
-
-    function saveFavoriteSettings() {
-        const nameInput = document.getElementById('favoriteName');
-        const name = (nameInput && nameInput.value.trim()) || `내 설정 ${new Date().toLocaleDateString('ko-KR')}`;
-        const favorites = getFavorites();
-        favorites[name] = serializeControlState();
-        setFavorites(favorites);
-        updateFavoriteSelect();
-        const select = document.getElementById('favoriteSelect');
-        if (select) select.value = name;
-        updateHistoryStatus(`즐겨찾기 저장: ${name}`);
-    }
-
-    function loadFavoriteSettings() {
-        const select = document.getElementById('favoriteSelect');
-        const name = select ? select.value : '';
-        const favorites = getFavorites();
-        if (!name || !favorites[name]) {
-            alert('불러올 설정이 없습니다. 먼저 저장해 주세요.');
-            return;
-        }
-        restoreControlState(favorites[name]);
-        recordHistoryCheckpoint(`즐겨찾기 불러오기: ${name}`);
-    }
-
-    function deleteFavoriteSettings() {
-        const select = document.getElementById('favoriteSelect');
-        const name = select ? select.value : '';
-        const favorites = getFavorites();
-        if (!name || !favorites[name]) {
-            alert('삭제할 설정이 없습니다.');
-            return;
-        }
-        delete favorites[name];
-        setFavorites(favorites);
-        updateFavoriteSelect();
-        updateHistoryStatus(`즐겨찾기 삭제: ${name}`);
-    }
-
-    function setupInlineEditing() {
-        const editableMap = [
-            { displayId: 'displayTitle', inputId: 'titleInput', emptyText: '제목입력' },
-            { displayId: 'displaySub', inputId: 'subInput', emptyText: '' },
-            { displayId: 'displayFootnote', inputId: 'footnoteInput', emptyText: '' },
-            { displayId: 'displayName', inputId: 'nameInput', emptyText: '작성자 이름' }
-        ];
-
-        editableMap.forEach(({ displayId, inputId, emptyText }) => {
-            const displayEl = document.getElementById(displayId);
-            const inputEl = document.getElementById(inputId);
-            if (!displayEl || !inputEl) return;
-
-            const finish = () => {
-                if (displayEl.getAttribute('contenteditable') !== 'true') return;
-                displayEl.removeAttribute('contenteditable');
-                inputEl.value = displayEl.innerText.trim() || emptyText;
-                updateOutput();
-                recordHistoryCheckpoint('미리보기 직접 편집');
-            };
-
-            displayEl.addEventListener('dblclick', () => {
-                if (displayEl.style.display === 'none') return;
-                displayEl.setAttribute('contenteditable', 'true');
-                displayEl.focus();
-                const range = document.createRange();
-                range.selectNodeContents(displayEl);
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-            });
-            displayEl.addEventListener('blur', finish);
-            displayEl.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    displayEl.blur();
-                } else if (event.key === 'Escape') {
-                    event.preventDefault();
-                    displayEl.removeAttribute('contenteditable');
-                    updateOutput();
-                }
-            });
-        });
-    }
-
-    function setParseSummary(message, status = 'ok') {
-        const summary = document.getElementById('parseSummary');
-        if (!summary) return;
-        summary.className = `parse-summary ${status}`;
-        summary.textContent = message;
-    }
-
-    function analyzeParsedState(mappedType) {
-        const labels = parseLabelSeries(document.getElementById('labelsInput')?.value || '');
-        const datasetInputs = [1, 2, 3, 4].map(index => document.getElementById(`dataInput${index}`)?.value || '');
-        const datasetNames = [1, 2, 3, 4].map(index => document.getElementById(`dataName${index}`)?.value || `데이터${index}`);
-        const activeDatasets = datasetInputs
-            .map((raw, index) => ({ index, name: datasetNames[index], values: parseNumericSeries(raw, labels.length), raw }))
-            .filter(item => item.raw.trim() !== '' || item.values.length);
-        const warnings = [];
-        activeDatasets.forEach(item => {
-            if (labels.length && item.values.length && item.values.length !== labels.length) {
-                warnings.push(`${item.name || `데이터${item.index + 1}`} ${item.values.length}개`);
-            }
-        });
-        const typeLabel = document.querySelector(`#chartType option[value="${mappedType}"]`)?.textContent?.replace(/^[^가-힣A-Za-z0-9]+/, '').trim() || mappedType;
-        const datasetSummary = activeDatasets.length ? `${activeDatasets.length}개 데이터 묶음` : '데이터 없음';
-        const labelSummary = labels.length ? `${labels.length}개 항목` : '항목 없음';
-        if (warnings.length) {
-            return { status: 'warn', message: `이렇게 읽었습니다: ${typeLabel} · ${labelSummary} · ${datasetSummary}. 항목 수와 수치 수가 다릅니다(${warnings.join(', ')}).` };
-        }
-        return { status: 'ok', message: `이렇게 읽었습니다: ${typeLabel} · ${labelSummary} · ${datasetSummary}.` };
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    function makePreviewEditAttrs(kind, rowIndex, colIndex, value) {
-        return `data-preview-edit-kind="${kind}" data-row-index="${rowIndex}" data-col-index="${colIndex}" data-edit-value="${escapeHtml(value)}"`;
-    }
-
-    function splitLabelInputPreservingEmpty(raw) {
-        const text = String(raw || '').trim();
-        if (!text) return [];
-        if (text.includes('\t')) return text.split(/\t+/).map(item => item.trim());
-        if (text.includes('\n') && !text.includes(',')) return text.split(/\r?\n+/).map(item => item.trim());
-        return text.split(',').map(item => item.trim());
-    }
-
-    function buildChartLabelEditState(labelIndex, title = 'X축 항목명 수정') {
-        const labels = (myChart && myChart.data && Array.isArray(myChart.data.labels)) ? myChart.data.labels : [];
-        if (labelIndex < 0 || labels[labelIndex] === undefined) return null;
-        const currentLabel = String(labels[labelIndex] ?? '');
-        return {
-            kind: 'chart-label',
-            labelIndex,
-            value: currentLabel,
-            title,
-            sub: `항목 ${labelIndex + 1} · 현재 항목명`
-        };
-    }
-
-    function buildDatasetNameEditState(datasetIndex, title = '데이터명 수정') {
-        if (!myChart || !myChart.data || !Array.isArray(myChart.data.datasets)) return null;
-        const dataset = myChart.data.datasets[datasetIndex];
-        if (!dataset) return null;
-        const sourceInputIndex = dataset._sourceInputIndex || (datasetIndex + 1);
-        const nameInput = document.getElementById('dataName' + sourceInputIndex);
-        const currentName = (nameInput ? nameInput.value : dataset.label) || dataset.label || `데이터 ${sourceInputIndex}`;
-        return {
-            kind: 'dataset-name',
-            datasetIndex,
-            sourceInputIndex,
-            value: currentName,
-            title,
-            sub: `데이터 ${sourceInputIndex} 이름 · 현재 데이터명`
-        };
-    }
-
-    function getChartLegendNameHitFromEvent(event) {
-        if (!myChart || !myChart.legend || !myChart.data || !Array.isArray(myChart.data.datasets)) return null;
-        const legend = myChart.legend;
-        const hitBoxes = Array.isArray(legend.legendHitBoxes) ? legend.legendHitBoxes : [];
-        const legendItems = Array.isArray(legend.legendItems) ? legend.legendItems : [];
-        if (!hitBoxes.length || !legendItems.length) return null;
-
-        const canvas = myChart.canvas || document.getElementById('myChart');
-        if (!canvas) return null;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        for (let i = 0; i < hitBoxes.length; i++) {
-            const box = hitBoxes[i];
-            if (!box) continue;
-            const left = box.left ?? box.x ?? 0;
-            const top = box.top ?? box.y ?? 0;
-            const width = box.width ?? 0;
-            const height = box.height ?? 0;
-            const padX = 8;
-            const padY = 6;
-            if (x < left - padX || x > left + width + padX || y < top - padY || y > top + height + padY) continue;
-
-            const item = legendItems[i] || {};
-            const datasetIndex = Number.isInteger(item.datasetIndex) ? item.datasetIndex : i;
-            const state = buildDatasetNameEditState(datasetIndex, '데이터명 수정');
-            if (!state) return null;
-            return { ...state, bounds: { left, top, width, height } };
-        }
-
-        return null;
-    }
-
-    function focusPreviewQuickEditInput() {
-        const previewInput = document.getElementById('previewQuickEditInput');
-        if (!previewInput) return;
-        setTimeout(() => {
-            previewInput.focus();
-            previewInput.select();
-        }, 0);
-    }
-
-    function getChartLabelHitFromEvent(event) {
-        if (!myChart || !myChart.scales || !myChart.data || !Array.isArray(myChart.data.labels)) return null;
-        const labels = myChart.data.labels;
-        if (!labels.length) return null;
-        const canvas = myChart.canvas || document.getElementById('myChart');
-        if (!canvas) return null;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        const chartType = document.getElementById('chartType')?.value || '';
-        if (chartType === 'pie') {
-            const pieTarget = getPieDataLabelTargetFromEvent(event);
-            return pieTarget && pieTarget.editKind === 'label'
-                ? buildChartLabelEditState(pieTarget.hit.index, '원그래프 항목명 수정')
-                : null;
-        }
-        const isHorizontal = chartType.startsWith('h-');
-        const scale = isHorizontal ? myChart.scales.y : myChart.scales.x;
-        if (!scale || typeof scale.getPixelForTick !== 'function') return null;
-
-        if (!isHorizontal) {
-            const labelZoneTop = Math.min(scale.top ?? 0, myChart.chartArea?.bottom ?? 0) - 6;
-            const labelZoneBottom = (scale.bottom ?? rect.height) + 24;
-            if (y < labelZoneTop || y > labelZoneBottom) return null;
+    // 일반 표
+    const rows = lines.map(l => {
+        const delimiter = l.includes('\t') ? '\t' : ',';
+        return l.split(delimiter).map(s=>s.trim());
+    }).filter(r => r.some(c=>c!==''));
+    if (!rows.length) { container.innerHTML = ''; return; }
+    let html = `<table class="asia-table" style="font-size:${Math.max(12,fontSize-3)}px;">`;
+    rows.forEach((cols, rowIdx) => {
+        if (rowIdx === 0) {
+            html += '<thead><tr>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr></thead><tbody>';
         } else {
-            const labelZoneLeft = Math.max(0, (scale.left ?? 0) - 90);
-            const labelZoneRight = (scale.right ?? 0) + 14;
-            if (x < labelZoneLeft || x > labelZoneRight) return null;
+            html += '<tr>' + cols.map((c,ci)=>`<td class="${ci===0?'col-0':''}">${c}</td>`).join('') + '</tr>';
         }
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
 
-        let nearestIndex = -1;
-        let nearestDistance = Infinity;
-        labels.forEach((_, index) => {
-            const pixel = scale.getPixelForTick(index);
-            const distance = Math.abs((isHorizontal ? y : x) - pixel);
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearestIndex = index;
-            }
+// ═══════════════════════════════════════════════════════
+//  PNG 저장
+// ═══════════════════════════════════════════════════════
+function getSelectedExportScale() {
+    const v = parseInt(val('exportScale') || '2');
+    return [2,3,4].includes(v) ? v : 2;
+}
+function updateExportSizeHint() {
+    const sc = getSelectedExportScale();
+    const el = document.getElementById('exportSizeHint');
+    if (el) el.textContent = `750px 기준 ${sc}배 크기(${750*sc}px)로 저장합니다.`;
+}
+async function downloadImage() {
+    const captureEl = document.getElementById('capture-area');
+    const scale = getSelectedExportScale();
+    try {
+        const canvas = await html2canvas(captureEl, {
+            scale, useCORS: true, backgroundColor: '#ffffff', logging: false
         });
-
-        const stepPixels = labels.length > 1
-            ? Math.abs(scale.getPixelForTick(1) - scale.getPixelForTick(0))
-            : 70;
-        const threshold = Math.max(18, Math.min(90, stepPixels * 0.48));
-        if (nearestIndex < 0 || nearestDistance > threshold) return null;
-        return buildChartLabelEditState(nearestIndex, 'X축 항목명 수정');
+        const a = document.createElement('a');
+        a.download = '도해프로젝트_' + Date.now() + '.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    } catch(e) {
+        alert('저장 중 오류가 발생했습니다: ' + e.message);
     }
+}
 
-    let previewQuickEditState = null;
-    let previewQuickEditHideTimer = null;
-    let previewHoverHintHideTimer = null;
-
-    function hidePreviewHoverHint() {
-        const hint = document.getElementById('previewHoverHint');
-        if (!hint) return;
-        clearTimeout(previewHoverHintHideTimer);
-        hint.style.display = 'none';
-    }
-
-    function schedulePreviewHoverHintHide(delay = 80) {
-        clearTimeout(previewHoverHintHideTimer);
-        previewHoverHintHideTimer = setTimeout(() => hidePreviewHoverHint(), delay);
-    }
-
-    function positionPreviewHoverHint(hint, event) {
-        const captureArea = document.getElementById('capture-area');
-        if (!captureArea || !hint) return;
-        const rect = captureArea.getBoundingClientRect();
-        const hintWidth = hint.offsetWidth || 170;
-        const hintHeight = hint.offsetHeight || 32;
-        let left = event.clientX - rect.left + 14;
-        let top = event.clientY - rect.top - hintHeight - 10;
-        const maxLeft = Math.max(8, rect.width - hintWidth - 8);
-        const maxTop = Math.max(8, rect.height - hintHeight - 8);
-        left = Math.min(Math.max(8, left), maxLeft);
-        top = Math.min(Math.max(8, top), maxTop);
-        hint.style.left = left + 'px';
-        hint.style.top = top + 'px';
-    }
-
-    function showPreviewHoverHint(event, message = EDIT_HOVER_MESSAGE) {
-        const hint = document.getElementById('previewHoverHint');
-        const editor = document.getElementById('previewQuickEdit');
-        const input = document.getElementById('previewQuickEditInput');
-        if (!hint) return;
-        if (editor && editor.style.display !== 'none' && input && document.activeElement === input) return;
-        hint.textContent = message;
-        hint.style.display = 'block';
-        positionPreviewHoverHint(hint, event);
-        clearTimeout(previewHoverHintHideTimer);
-    }
-
-    function hidePreviewQuickEditor(force = false) {
-        const editor = document.getElementById('previewQuickEdit');
-        const input = document.getElementById('previewQuickEditInput');
-        if (!editor) return;
-        if (!force && input && document.activeElement === input) return;
-        clearTimeout(previewQuickEditHideTimer);
-        editor.style.display = 'none';
-        previewQuickEditState = null;
-    }
-
-    function schedulePreviewQuickEditorHide(delay = 450) {
-        clearTimeout(previewQuickEditHideTimer);
-        previewQuickEditHideTimer = setTimeout(() => hidePreviewQuickEditor(false), delay);
-    }
-
-    function positionPreviewQuickEditor(editor, event) {
-        const captureArea = document.getElementById('capture-area');
-        if (!captureArea || !editor) return;
-        const rect = captureArea.getBoundingClientRect();
-        const editorWidth = editor.offsetWidth || 230;
-        const editorHeight = editor.offsetHeight || 120;
-        let left = event.clientX - rect.left + 14;
-        let top = event.clientY - rect.top + 14;
-        const maxLeft = Math.max(8, rect.width - editorWidth - 8);
-        const maxTop = Math.max(8, rect.height - editorHeight - 8);
-        left = Math.min(Math.max(8, left), maxLeft);
-        top = Math.min(Math.max(8, top), maxTop);
-        editor.style.left = left + 'px';
-        editor.style.top = top + 'px';
-    }
-
-    function showPreviewQuickEditor(event, state) {
-        const editor = document.getElementById('previewQuickEdit');
-        const title = document.getElementById('previewQuickEditTitle');
-        const sub = document.getElementById('previewQuickEditSub');
-        const input = document.getElementById('previewQuickEditInput');
-        if (!editor || !title || !sub || !input || !state) return;
-        if (document.activeElement === input) return;
-
-        const stateKey = JSON.stringify({
-            kind: state.kind,
-            labelIndex: state.labelIndex,
-            rowIndex: state.rowIndex,
-            colIndex: state.colIndex,
-            datasetIndex: state.datasetIndex,
-            sourceInputIndex: state.sourceInputIndex
-        });
-        title.textContent = state.title || '미리보기 빠른 수정';
-        sub.textContent = state.sub || '';
-        if (!previewQuickEditState || previewQuickEditState.key !== stateKey) {
-            input.value = state.value || '';
-        }
-        previewQuickEditState = { ...state, key: stateKey };
-        hidePreviewHoverHint();
-        editor.style.display = 'block';
-        positionPreviewQuickEditor(editor, event);
-        clearTimeout(previewQuickEditHideTimer);
-    }
-
-    function updateTableDataCell(rowIndex, colIndex, value, options = {}) {
-        const tableInput = document.getElementById('tableDataInput');
-        if (!tableInput) return false;
-        const rows = String(tableInput.value || '').split(/\r?\n/);
-        while (rows.length <= rowIndex) rows.push('');
-        const delimiter = rows[rowIndex].includes('\t') ? '\t' : ',';
-        const cells = rows[rowIndex] === '' ? [] : rows[rowIndex].split(delimiter);
-        while (cells.length <= colIndex) cells.push('');
-        if (options.blockHeader) {
-            const cleanValue = String(value || '').replace(/^##\s*/, '').trim();
-            cells[0] = '## ' + cleanValue;
-        } else {
-            cells[colIndex] = String(value || '').trim();
-        }
-        rows[rowIndex] = cells.join(delimiter);
-        tableInput.value = rows.join('\n');
-        return true;
-    }
-
-    function commitPreviewQuickEdit() {
-        const input = document.getElementById('previewQuickEditInput');
-        if (!input || !previewQuickEditState) return;
-        const valueText = String(input.value || '').trim();
-        if (previewQuickEditState.kind === 'chart-label') {
-            const labelsInput = document.getElementById('labelsInput');
-            if (!labelsInput) return;
-            const labels = splitLabelInputPreservingEmpty(labelsInput.value);
-            while (labels.length <= previewQuickEditState.labelIndex) labels.push('');
-            labels[previewQuickEditState.labelIndex] = valueText;
-            labelsInput.value = labels.join(', ');
+// ═══════════════════════════════════════════════════════
+//  인라인 편집 (제목·부제목·주석·이름)
+// ═══════════════════════════════════════════════════════
+function setupInlineEditing() {
+    const pairs = [
+        { displayId:'displayTitle', inputId:'titleInput' },
+        { displayId:'displaySub', inputId:'subInput' },
+        { displayId:'displayFootnote', inputId:'footnoteInput' },
+        { displayId:'displayName', inputId:'nameInput' }
+    ];
+    pairs.forEach(({displayId, inputId}) => {
+        const disp = document.getElementById(displayId);
+        const inp = document.getElementById(inputId);
+        if (!disp || !inp) return;
+        const finish = () => {
+            if (disp.getAttribute('contenteditable') !== 'true') return;
+            disp.removeAttribute('contenteditable');
+            inp.value = disp.innerText.trim();
             updateOutput();
-            recordHistoryCheckpoint('X축 항목 직접 수정');
-            hidePreviewQuickEditor(true);
-            hidePreviewHoverHint();
-            return;
-        }
-
-        if (previewQuickEditState.kind === 'dataset-name') {
-            const targetInput = document.getElementById('dataName' + previewQuickEditState.sourceInputIndex);
-            if (!targetInput) return;
-            targetInput.value = valueText;
-            updateOutput();
-            recordHistoryCheckpoint('그래프 위 데이터명 직접 수정');
-            hidePreviewQuickEditor(true);
-            hidePreviewHoverHint();
-            return;
-        }
-
-        if (previewQuickEditState.kind === 'table-cell' || previewQuickEditState.kind === 'table-block-header') {
-            const ok = updateTableDataCell(
-                Number(previewQuickEditState.rowIndex),
-                Number(previewQuickEditState.colIndex),
-                valueText,
-                { blockHeader: previewQuickEditState.kind === 'table-block-header' }
-            );
-            if (!ok) return;
-            updateOutput();
-            recordHistoryCheckpoint('텍스트 표 직접 수정');
-            hidePreviewQuickEditor(true);
-            hidePreviewHoverHint();
-        }
-    }
-
-    function setupPreviewQuickEditing() {
-        const editor = document.getElementById('previewQuickEdit');
-        const input = document.getElementById('previewQuickEditInput');
-        const applyBtn = document.getElementById('previewQuickEditApply');
-        const closeBtn = document.getElementById('previewQuickEditClose');
-        const tableContainer = document.getElementById('table-container');
-        if (!editor || !input || !applyBtn || !closeBtn || !tableContainer || editor.dataset.previewEditReady === 'true') return;
-
-        const buildStateFromTarget = (target) => {
-            if (!target) return null;
-            const kind = target.dataset.previewEditKind || 'table-cell';
-            const rowIndex = Number(target.dataset.rowIndex || 0);
-            const colIndex = Number(target.dataset.colIndex || 0);
-            const value = target.dataset.editValue !== undefined ? target.dataset.editValue : target.innerText.trim();
-            const colLabel = colIndex === 0 ? '첫 번째 칸' : `${colIndex + 1}번째 칸`;
-            return {
-                kind,
-                rowIndex,
-                colIndex,
-                value,
-                title: kind === 'table-block-header' ? '표 소제목 빠른 수정' : '텍스트 표 빠른 수정',
-                sub: `${rowIndex + 1}행 · ${colLabel}`
-            };
+            recordHistory('텍스트 직접 편집');
         };
-
-        tableContainer.addEventListener('mousemove', (event) => {
-            const target = event.target.closest('[data-preview-edit-kind]');
-            if (!target || !tableContainer.contains(target)) {
-                schedulePreviewHoverHintHide(80);
-                return;
-            }
-            showPreviewHoverHint(event, EDIT_HOVER_MESSAGE);
+        disp.addEventListener('dblclick', () => {
+            disp.setAttribute('contenteditable', 'true');
+            disp.focus();
         });
-
-        tableContainer.addEventListener('dblclick', (event) => {
-            const target = event.target.closest('[data-preview-edit-kind]');
-            if (!target || !tableContainer.contains(target)) return;
-            const state = buildStateFromTarget(target);
-            if (!state) return;
-            showPreviewQuickEditor(event, state);
-            setTimeout(() => {
-                input.focus();
-                input.select();
-            }, 0);
+        disp.addEventListener('blur', finish);
+        disp.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); disp.blur(); }
+            if (e.key === 'Escape') { disp.removeAttribute('contenteditable'); updateOutput(); }
         });
+    });
+}
 
-        tableContainer.addEventListener('mouseleave', () => schedulePreviewHoverHintHide(80));
-        editor.addEventListener('mouseenter', () => clearTimeout(previewQuickEditHideTimer));
-        editor.addEventListener('mouseleave', () => {});
-        applyBtn.addEventListener('click', commitPreviewQuickEdit);
-        closeBtn.addEventListener('click', () => hidePreviewQuickEditor(true));
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                commitPreviewQuickEdit();
-            } else if (event.key === 'Escape') {
-                event.preventDefault();
-                hidePreviewQuickEditor(true);
-            }
-        });
-        input.addEventListener('change', commitPreviewQuickEdit);
-        document.addEventListener('mousedown', (event) => {
-            if (editor.style.display === 'none') return;
-            if (editor.contains(event.target)) return;
-            hidePreviewQuickEditor(true);
-        });
-        editor.dataset.previewEditReady = 'true';
-    }
+// ═══════════════════════════════════════════════════════
+//  초기화
+// ═══════════════════════════════════════════════════════
+window.addEventListener('load', function() {
+    Chart.register(ChartDataLabels);
 
+    setupInlineEditing();
+    updateFavoriteSelect();
+    applyPalettePreset('dohae', true);
+    updateExportSizeHint();
 
-    let chartQuickEditState = null;
-    let chartQuickEditHideTimer = null;
-
-    function hideChartQuickEditor(force = false) {
-        const editor = document.getElementById('chartQuickEdit');
-        const input = document.getElementById('chartQuickEditInput');
-        if (!editor) return;
-        if (!force && input && document.activeElement === input) return;
-        clearTimeout(chartQuickEditHideTimer);
-        editor.style.display = 'none';
-        chartQuickEditState = null;
-    }
-
-    function scheduleChartQuickEditorHide(delay = 450) {
-        clearTimeout(chartQuickEditHideTimer);
-        chartQuickEditHideTimer = setTimeout(() => hideChartQuickEditor(false), delay);
-    }
-
-    function formatQuickEditValue(value) {
-        const numberValue = Number(value);
-        if (!Number.isFinite(numberValue)) return String(value ?? '');
-        return Number.isInteger(numberValue) ? String(numberValue) : String(numberValue);
-    }
-
-    function splitEditableDataSeries(raw) {
-        const text = String(raw || '').trim();
-        if (!text) return [];
-        if (text.includes('\t')) return text.split(/\t+/).map(item => item.trim());
-        if (text.includes('\n') && !text.includes(',')) return text.split(/\r?\n+/).map(item => item.trim());
-        return text.split(',').map(item => item.trim());
-    }
-
-    function arraysAlmostEqual(a, b) {
-        if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
-        for (let i = 0; i < a.length; i++) {
-            const av = Number(a[i]);
-            const bv = Number(b[i]);
-            if (!Number.isFinite(av) || !Number.isFinite(bv)) return false;
-            if (Math.abs(av - bv) > 0.0000001) return false;
+    // 실시간 입력 반영
+    const liveIds = ['labelsInput','dataInput1','dataInput2','dataInput3','dataInput4',
+                     'dataName1','dataName2','dataName3','dataName4',
+                     'titleInput','subInput','footnoteInput','nameInput',
+                     'yMin','yMax','tableDataInput'];
+    liveIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => { toggleInputs(); updateOutput(); scheduleHistory('입력'); });
         }
-        return true;
-    }
+    });
 
-    function attachDatasetSourceMetadata(datasets, sourceArrays) {
-        const usedSources = new Set();
-        datasets.forEach((dataset, datasetIndex) => {
-            let matchedSource = -1;
-            for (let i = 0; i < sourceArrays.length; i++) {
-                if (usedSources.has(i)) continue;
-                const source = sourceArrays[i];
-                if (!Array.isArray(source) || source.length === 0) continue;
-                if (arraysAlmostEqual(dataset.data, source)) {
-                    matchedSource = i;
-                    usedSources.add(i);
-                    break;
-                }
-            }
-            dataset._sourceInputIndex = matchedSource >= 0 ? matchedSource + 1 : datasetIndex + 1;
-        });
-    }
-
-    function getChartHitFromEvent(event) {
-        if (!myChart) return null;
-        const elements = myChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
-        if (!elements || !elements.length) return null;
-        const hit = elements[0];
-        if (!hit || hit.datasetIndex === undefined || hit.index === undefined) return null;
-        return hit;
-    }
-
-
-    function getPieDataLabelTargetFromEvent(event) {
-        const chartType = document.getElementById('chartType')?.value || '';
-        if (chartType !== 'pie' || !myChart) return null;
-
-        const hit = getChartHitFromEvent(event);
-        if (!hit) return null;
-
-        const dataset = myChart.data.datasets[hit.datasetIndex] || {};
-        const context = {
-            chart: myChart,
-            dataset,
-            datasetIndex: hit.datasetIndex,
-            dataIndex: hit.index
-        };
-
-        if (getPieRatio(context) <= 0 || getPieIsOutside(context)) return null;
-
-        const meta = myChart.getDatasetMeta(hit.datasetIndex);
-        const arc = meta && meta.data ? meta.data[hit.index] : null;
-        if (!arc) return null;
-
-        const position = typeof arc.tooltipPosition === 'function'
-            ? arc.tooltipPosition()
-            : { x: arc.x, y: arc.y };
-        if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y)) return null;
-
-        const canvas = myChart.canvas || document.getElementById('myChart');
-        if (!canvas) return null;
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        const label = (myChart.data.labels && myChart.data.labels[hit.index]) ? String(myChart.data.labels[hit.index]).trim() : '';
-        const rawValue = Array.isArray(dataset.data) ? dataset.data[hit.index] : '';
-        const isKoreanNumber = document.getElementById('koreanNumberType') && document.getElementById('koreanNumberType').value === 'apply';
-        const subText = document.getElementById('subInput') ? document.getElementById('subInput').value : '';
-        const displayValue = String(isKoreanNumber ? formatKoreanNumber(rawValue, subText) : rawValue);
-        const labelLines = label ? wrapPieInsideLabel(label, 11, 4).split('\n').filter(Boolean) : [];
-        const lines = labelLines.concat([displayValue]);
-        if (!lines.length) return null;
-
-        const datasetFontSize = getDatasetLabelFontSize(hit.datasetIndex);
-        const fontConfig = getPieFont(context, datasetFontSize / 18);
-        const fontSize = Number(fontConfig.size) || datasetFontSize || 18;
-        const lineHeight = Math.max(16, Math.round(fontSize * 1.25));
-        const paddingX = 10;
-        const paddingY = 6;
-
-        const ctx = myChart.ctx;
-        let maxWidth = 0;
-        if (ctx && typeof ctx.measureText === 'function') {
-            ctx.save();
-            ctx.font = `${fontConfig.weight || '900'} ${fontSize}px ${globalFont || 'sans-serif'}`;
-            lines.forEach(line => {
-                const width = ctx.measureText(String(line)).width;
-                if (width > maxWidth) maxWidth = width;
-            });
-            ctx.restore();
-        } else {
-            maxWidth = Math.max(...lines.map(line => String(line).length * fontSize * 0.62));
+    // 탭키 삽입 (표 입력창)
+    const tableInput = document.getElementById('tableDataInput');
+    if (tableInput) tableInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const s = this.selectionStart, en = this.selectionEnd;
+            this.value = this.value.substring(0,s) + '\t' + this.value.substring(en);
+            this.selectionStart = this.selectionEnd = s + 1;
         }
+    });
 
-        const textHeight = lineHeight * lines.length;
-        const left = position.x - (maxWidth / 2) - paddingX;
-        const right = position.x + (maxWidth / 2) + paddingX;
-        const top = position.y - (textHeight / 2) - paddingY;
-        const bottom = position.y + (textHeight / 2) + paddingY;
-
-        if (x < left || x > right || y < top || y > bottom) return null;
-
-        const innerTop = position.y - (textHeight / 2);
-        const rawLineIndex = Math.floor((y - innerTop) / lineHeight);
-        const lineIndex = Math.max(0, Math.min(lines.length - 1, rawLineIndex));
-        const valueLineIndex = Math.max(0, lines.length - 1);
-        const editKind = (lineIndex >= valueLineIndex || labelLines.length === 0) ? 'value' : 'label';
-
-        return {
-            hit,
-            editKind,
-            lineIndex,
-            label,
-            rawValue,
-            displayValue,
-            bounds: { left, right, top, bottom }
-        };
-    }
-
-    function focusChartQuickEditInput() {
-        const input = document.getElementById('chartQuickEditInput');
-        if (!input) return;
-        setTimeout(() => {
-            input.focus();
-            input.select();
-        }, 0);
-    }
-
-    function positionChartQuickEditor(editor, event) {
-        const container = document.getElementById('chart-container');
-        if (!container || !editor) return;
-        const containerRect = container.getBoundingClientRect();
-        const editorWidth = editor.offsetWidth || 220;
-        const editorHeight = editor.offsetHeight || 120;
-        let left = event.clientX - containerRect.left + 14;
-        let top = event.clientY - containerRect.top + 14;
-        const maxLeft = Math.max(8, containerRect.width - editorWidth - 8);
-        const maxTop = Math.max(8, containerRect.height - editorHeight - 8);
-        left = Math.min(Math.max(8, left), maxLeft);
-        top = Math.min(Math.max(8, top), maxTop);
-        editor.style.left = left + 'px';
-        editor.style.top = top + 'px';
-    }
-
-    function showChartQuickEditor(event, hit) {
-        if (!myChart || !hit) return;
-        const editor = document.getElementById('chartQuickEdit');
-        const title = document.getElementById('chartQuickEditTitle');
-        const sub = document.getElementById('chartQuickEditSub');
-        const input = document.getElementById('chartQuickEditInput');
-        if (!editor || !title || !sub || !input) return;
-        if (document.activeElement === input) return;
-
-        const dataset = myChart.data.datasets[hit.datasetIndex] || {};
-        const sourceInputIndex = dataset._sourceInputIndex || (hit.datasetIndex + 1);
-        const label = (myChart.data.labels && myChart.data.labels[hit.index]) ? myChart.data.labels[hit.index] : '항목 ' + (hit.index + 1);
-        const nameInput = document.getElementById('dataName' + sourceInputIndex);
-        const datasetName = dataset.label || (nameInput ? nameInput.value : '') || '데이터 ' + sourceInputIndex;
-        const rawValue = Array.isArray(dataset.data) ? dataset.data[hit.index] : '';
-        const stateKey = sourceInputIndex + '|' + hit.datasetIndex + '|' + hit.index;
-
-        const currentChartType = document.getElementById('chartType')?.value || '';
-        title.textContent = (currentChartType === 'pie' ? '원그래프 숫자 수정' : '데이터값 수정') + ' · ' + label;
-        sub.textContent = datasetName + ' · 현재 데이터값 ' + formatQuickEditValue(rawValue);
-        if (!chartQuickEditState || chartQuickEditState.key !== stateKey) {
-            input.value = formatQuickEditValue(rawValue);
+    // Ctrl+Z
+    document.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z') {
+            e.preventDefault(); undoLastChange();
         }
-        chartQuickEditState = {
-            key: stateKey,
-            datasetIndex: hit.datasetIndex,
-            dataIndex: hit.index,
-            sourceInputIndex,
-            label,
-            datasetName
-        };
-        editor.style.display = 'block';
-        positionChartQuickEditor(editor, event);
-        clearTimeout(chartQuickEditHideTimer);
-    }
+    });
 
-    function commitChartQuickEdit() {
-        const input = document.getElementById('chartQuickEditInput');
-        if (!input || !chartQuickEditState) return;
-        const valueText = String(input.value || '').trim();
-        const numericValue = Number(valueText.replace(/,/g, ''));
-        if (!Number.isFinite(numericValue)) {
-            alert('숫자만 입력해 주세요. 예: 1234 또는 -5.6');
-            input.focus();
-            input.select();
-            return;
-        }
+    // 예시 데이터로 초기화
+    loadExampleData();
+    recordHistory('초기 상태');
 
-        const targetInput = document.getElementById('dataInput' + chartQuickEditState.sourceInputIndex);
-        if (!targetInput) return;
-        const values = splitEditableDataSeries(targetInput.value);
-        while (values.length <= chartQuickEditState.dataIndex) values.push('');
-        values[chartQuickEditState.dataIndex] = String(numericValue);
-        targetInput.value = values.join(', ');
-
-        updateOutput();
-        recordHistoryCheckpoint('그래프 위 데이터 직접 수정');
-        hideChartQuickEditor(true);
-    }
-
-    function setupPieSideListQuickEditing() {
-        const pieSideList = document.getElementById('pie-side-list');
-        if (!pieSideList || pieSideList.dataset.pieEditReady === 'true') return;
-
-        const getTarget = (event) => {
-            const target = event.target && event.target.closest ? event.target.closest('.pie-side-item[data-pie-edit-index]') : null;
-            return target && pieSideList.contains(target) ? target : null;
-        };
-
-        pieSideList.addEventListener('mousemove', (event) => {
-            const target = getTarget(event);
-            if (!target) {
-                schedulePreviewHoverHintHide(80);
-                return;
-            }
-            hidePreviewQuickEditor(true);
-            const isValueTarget = !!(event.target && event.target.closest && event.target.closest('.pie-side-value'));
-            const isLabelTarget = !!(event.target && event.target.closest && event.target.closest('.pie-side-label'));
-            const hoverMessage = isValueTarget ? VALUE_EDIT_HOVER_MESSAGE : (isLabelTarget ? ITEM_EDIT_HOVER_MESSAGE : PIE_SPLIT_HOVER_MESSAGE);
-            showPreviewHoverHint(event, hoverMessage);
-        });
-
-        pieSideList.addEventListener('dblclick', (event) => {
-            const target = getTarget(event);
-            if (!target) return;
-            const dataIndex = parseInt(target.dataset.pieEditIndex, 10);
-            if (Number.isNaN(dataIndex)) return;
-
-            hidePreviewHoverHint();
-            if (event.target && event.target.closest && event.target.closest('.pie-side-value')) {
-                showChartQuickEditor(event, { datasetIndex: 0, index: dataIndex });
-                const input = document.getElementById('chartQuickEditInput');
-                if (input) {
-                    setTimeout(() => {
-                        input.focus();
-                        input.select();
-                    }, 0);
-                }
-                return;
-            }
-
-            hideChartQuickEditor(true);
-            const labelState = buildChartLabelEditState(dataIndex, '원그래프 항목명 수정');
-            if (!labelState) return;
-            showPreviewQuickEditor(event, labelState);
-            focusPreviewQuickEditInput();
-        });
-
-        pieSideList.addEventListener('mouseleave', () => {
-            schedulePreviewHoverHintHide(80);
-            scheduleChartQuickEditorHide(450);
-        });
-
-        pieSideList.dataset.pieEditReady = 'true';
-    }
-
-    function setupChartQuickEditing() {
-        const canvas = document.getElementById('myChart');
-        const editor = document.getElementById('chartQuickEdit');
-        const input = document.getElementById('chartQuickEditInput');
-        const applyBtn = document.getElementById('chartQuickEditApply');
-        const closeBtn = document.getElementById('chartQuickEditClose');
-        if (!canvas || !editor || !input || editor.dataset.quickEditReady === 'true') return;
-
-        canvas.addEventListener('mousemove', (event) => {
-            const type = document.getElementById('chartType')?.value || '';
-            if (type === 'table' || type === 'list' || type === 'timeline') {
-                hideChartQuickEditor(true);
-                hidePreviewHoverHint();
-                canvas.style.cursor = '';
-                return;
-            }
-
-            if (type === 'pie') {
-                const pieTarget = getPieDataLabelTargetFromEvent(event);
-                if (pieTarget) {
-                    hideChartQuickEditor(true);
-                    hidePreviewQuickEditor(true);
-                    canvas.style.cursor = pieTarget.editKind === 'value' ? 'ns-resize' : 'text';
-                    showPreviewHoverHint(event, pieTarget.editKind === 'value' ? VALUE_EDIT_HOVER_MESSAGE : ITEM_EDIT_HOVER_MESSAGE);
-                    return;
-                }
-                canvas.style.cursor = '';
-                scheduleChartQuickEditorHide(350);
-                schedulePreviewHoverHintHide(80);
-                return;
-            }
-
-            const legendHit = getChartLegendNameHitFromEvent(event);
-            if (legendHit) {
-                hideChartQuickEditor(true);
-                hidePreviewQuickEditor(true);
-                canvas.style.cursor = 'text';
-                showPreviewHoverHint(event, DATASET_NAME_EDIT_HOVER_MESSAGE);
-                return;
-            }
-
-            const hit = getChartHitFromEvent(event);
-            if (!hit) {
-                const labelHit = getChartLabelHitFromEvent(event);
-                if (labelHit) {
-                    hideChartQuickEditor(true);
-                    canvas.style.cursor = 'text';
-                    showPreviewHoverHint(event, EDIT_HOVER_MESSAGE);
-                    return;
-                }
-                canvas.style.cursor = '';
-                scheduleChartQuickEditorHide(350);
-                schedulePreviewHoverHintHide(80);
-                return;
-            }
-            canvas.style.cursor = 'ns-resize';
-            hidePreviewHoverHint();
-            hidePreviewQuickEditor(true);
-            showChartQuickEditor(event, hit);
-        });
-
-        canvas.addEventListener('mouseleave', () => { canvas.style.cursor = ''; scheduleChartQuickEditorHide(450); schedulePreviewHoverHintHide(80); });
-        canvas.addEventListener('dblclick', (event) => {
-            const type = document.getElementById('chartType')?.value || '';
-            if (type === 'pie') {
-                const pieTarget = getPieDataLabelTargetFromEvent(event);
-                if (!pieTarget) return;
-                hidePreviewHoverHint();
-                if (pieTarget.editKind === 'value') {
-                    hidePreviewQuickEditor(true);
-                    showChartQuickEditor(event, pieTarget.hit);
-                    focusChartQuickEditInput();
-                    return;
-                }
-                hideChartQuickEditor(true);
-                const labelState = buildChartLabelEditState(pieTarget.hit.index, '원그래프 항목명 수정');
-                if (!labelState) return;
-                showPreviewQuickEditor(event, labelState);
-                focusPreviewQuickEditInput();
-                return;
-            }
-
-            const legendHit = getChartLegendNameHitFromEvent(event);
-            if (legendHit) {
-                hideChartQuickEditor(true);
-                showPreviewQuickEditor(event, legendHit);
-                focusPreviewQuickEditInput();
-                return;
-            }
-
-            if (editor.style.display !== 'none') {
-                input.focus();
-                input.select();
-                return;
-            }
-            const labelHit = getChartLabelHitFromEvent(event);
-            if (labelHit) {
-                showPreviewQuickEditor(event, labelHit);
-                focusPreviewQuickEditInput();
-            }
-        });
-
-        editor.addEventListener('mouseenter', () => clearTimeout(chartQuickEditHideTimer));
-        editor.addEventListener('mouseleave', () => scheduleChartQuickEditorHide(450));
-        applyBtn.addEventListener('click', commitChartQuickEdit);
-        closeBtn.addEventListener('click', () => hideChartQuickEditor(true));
-        input.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                commitChartQuickEdit();
-            } else if (event.key === 'Escape') {
-                event.preventDefault();
-                hideChartQuickEditor(true);
-            }
-        });
-        input.addEventListener('change', commitChartQuickEdit);
-        editor.dataset.quickEditReady = 'true';
-    }
-
-    function updateExportSizeHint() {
-        const hintEl = document.querySelector('.export-size-hint');
-        if (!hintEl) return;
-        const sizes = getFixedExportSize();
-        hintEl.innerText = `현재 750px 작업 화면을 기준으로 ${sizes.exportScale}배 크기(${sizes.exportWidth}px × ${sizes.exportHeight}px)로 고정 저장합니다.`;
-    }
-
-    function hasGeminiInputData() {
-        const geminiInput = document.getElementById('geminiInput');
-        return !!(geminiInput && geminiInput.value.trim());
-    }
-
-    function handleChartTypeChange() {
-        const type = document.getElementById('chartType').value;
-        if (!initializedChartTypes.has(type)) {
-            initializedChartTypes.add(type);
-
-            if (hasGeminiInputData()) {
-                parseGeminiData({ preserveSelectedType: true, silent: true });
-            } else {
-                loadExampleData();
-            }
-        } else {
-            toggleInputs();
-        }
-
-        stabilizeChartLayout();
-    }
-
-    function parseGeminiData(options = {}) {
-        const { preserveSelectedType = false, silent = false } = options;
-        const inputEl = document.getElementById('geminiInput');
-        const text = inputEl ? inputEl.value : '';
-        
-        if (!text.trim()) {
-            if (!silent) alert("엑셀 데이터나 텍스트를 먼저 붙여넣어 주세요.");
-            setParseSummary('붙여넣은 내용이 없습니다.', 'error');
-            return false;
-        }
-
-        // --- 1. 기존 제미나이 태그 형식 처리 (호환성 유지) ---
-        const parsedData = {};
-        let currentTag = '';
-        let hasTags = false;
-        const tagLinePattern = /^\s*(\[[^\]]+\])\s*[:：]?\s*(.*)$/;
-        const lines = text.split(/\r?\n/);
-
-        for (let line of lines) {
-            const match = line.match(tagLinePattern);
-            if (match) {
-                hasTags = true;
-                currentTag = match[1].trim();
-                parsedData[currentTag] = (parsedData[currentTag] ? parsedData[currentTag] + '\n' : '') + (match[2] || '').trim();
-            } else if (currentTag) {
-                parsedData[currentTag] += '\n' + line.trim();
-            }
-        }
-
-        // --- 🌟 2. [핵심] 엑셀에서 바로 복붙한 일반 데이터 완벽 인식 로직 🌟 ---
-        if (!hasTags) {
-            let validLines = lines.filter(l => l.trim().length > 0);
-            if (validLines.length === 0) return false;
-
-            // 엑셀에서 복붙하면 보통 탭(\t)으로 열이 구분됩니다.
-            let delimiter = validLines.some(l => l.includes('\t')) ? '\t' : ',';
-            
-            let title = '';
-            let startIndex = 0;
-            
-            // 2-1. 첫 줄이 단일 셀(제목)인지 확인
-            let firstRow = validLines[0].split(delimiter).map(s => s.trim());
-            if (firstRow.length === 1 && validLines.length > 1) {
-                title = firstRow[0].replace(/[*`#>]/g, ''); // 마크다운 기호 제거
-                startIndex = 1;
-            }
-
-            // 2-2. 데이터 추출 준비
-            let labels = [];
-            let d1 = [], d2 = [], d3 = [], d4 = [];
-            let n1 = '데이터 1', n2 = '데이터 2', n3 = '데이터 3', n4 = '데이터 4';
-
-            // 2-3. 헤더(데이터명) 확인: 첫 데이터 줄의 두 번째 값이 문자인지 확인
-            if (startIndex < validLines.length) {
-                let headerRow = validLines[startIndex].split(delimiter).map(s => s.trim());
-                // 숫자가 아니면 헤더 행으로 간주
-                if (headerRow.length > 1 && isNaN(Number(headerRow[1].replace(/[,%]/g, '')))) {
-                    if (headerRow[1]) n1 = headerRow[1].replace(/[*`#>]/g, '');
-                    if (headerRow[2]) n2 = headerRow[2].replace(/[*`#>]/g, '');
-                    if (headerRow[3]) n3 = headerRow[3].replace(/[*`#>]/g, '');
-                    if (headerRow[4]) n4 = headerRow[4].replace(/[*`#>]/g, '');
-                    startIndex++;
-                }
-            }
-
-            // 2-4. 본문(X축 항목 및 수치) 추출
-            for (let i = startIndex; i < validLines.length; i++) {
-                let cols = validLines[i].split(delimiter).map(c => c.trim());
-                if (cols.length >= 1 && cols[0]) labels.push(cols[0].replace(/[*`#>]/g, ''));
-                // 숫자, 소수점, 음수기호 외(콤마, % 등) 모두 제거하여 순수 숫자로 추출
-                if (cols.length >= 2) d1.push(cols[1].replace(/[^\d.-]/g, '')); 
-                if (cols.length >= 3) d2.push(cols[2].replace(/[^\d.-]/g, ''));
-                if (cols.length >= 4) d3.push(cols[3].replace(/[^\d.-]/g, ''));
-                if (cols.length >= 5) d4.push(cols[4].replace(/[^\d.-]/g, ''));
-            }
-
-            // 2-5. 입력칸에 값 할당
-            if (title) document.getElementById('titleInput').value = title;
-            document.getElementById('labelsInput').value = labels.join(', ');
-            
-            document.getElementById('dataName1').value = n1; 
-            document.getElementById('dataInput1').value = d1.join(', ');
-            
-            if (d2.length && d2.some(v => v !== '')) { document.getElementById('dataName2').value = n2; document.getElementById('dataInput2').value = d2.join(', '); } else { document.getElementById('dataInput2').value = ''; document.getElementById('dataName2').value = ''; }
-            if (d3.length && d3.some(v => v !== '')) { document.getElementById('dataName3').value = n3; document.getElementById('dataInput3').value = d3.join(', '); } else { document.getElementById('dataInput3').value = ''; document.getElementById('dataName3').value = ''; }
-            if (d4.length && d4.some(v => v !== '')) { document.getElementById('dataName4').value = n4; document.getElementById('dataInput4').value = d4.join(', '); } else { document.getElementById('dataInput4').value = ''; document.getElementById('dataName4').value = ''; }
-
-            // 데이터가 여러 열일 경우 자동으로 다중 그래프(Multi) 모드로 변경
-            const currentType = document.getElementById('chartType').value;
-            if (d2.length && d2.some(v=>v!=='') && !chartUsesMultipleDatasets(currentType) && !['table', 'list', 'timeline'].includes(currentType)) {
-                if (currentType === 'line') document.getElementById('chartType').value = 'multi-line';
-                else if (currentType === 'bar' || currentType === 'pie') document.getElementById('chartType').value = 'multi-bar';
-                else if (currentType === 'h-bar') document.getElementById('chartType').value = 'h-multi-bar';
-            }
-
-            // 표 데이터 칸에도 원본 동기화
-            const tableDataInput = document.getElementById('tableDataInput');
-            if(tableDataInput) tableDataInput.value = text.trim();
-
-            toggleInputs();
-            updateOutput(); // 즉시 화면 렌더링 갱신
-            setParseSummary('엑셀/텍스트 데이터를 성공적으로 차트에 반영했습니다.', 'ok');
-            
-            const btn = document.getElementById('autoFillBtn');
-            if (!silent && btn) {
-                const originalText = btn.innerText;
-                btn.innerText = '✅ 데이터 반영 성공!'; btn.style.backgroundColor = '#111';
-                setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
-            }
-            recordHistoryCheckpoint('엑셀 표 데이터 자동 입력');
-            return true;
-        }
-
-        // --- 3. 제미나이 태그가 있을 경우의 처리 ---
-        const extract = (tag) => parsedData[tag] ? parsedData[tag].trim() : '';
-
-        let rawType = extract('[종류]').toLowerCase();
-        let mappedType = document.getElementById('chartType').value;
-
-        if (rawType) {
-            if (rawType.includes('chart-table') || rawType.includes('그래프+표')) mappedType = 'chart-table';
-            else if (rawType.includes('timeline') || rawType.includes('타임라인')) mappedType = 'timeline';
-            else if (rawType.includes('stacked-combo') || rawType.includes('누적막대+선')) mappedType = 'stacked-combo';
-            else if (rawType.includes('multi-combo') || rawType.includes('다중막대+선')) mappedType = 'multi-combo';
-            else if (rawType.includes('h-stacked-bar') || rawType.includes('가로형 누적')) mappedType = 'h-stacked-bar';
-            else if (rawType.includes('h-multi-bar') || rawType.includes('가로형 다중막대')) mappedType = 'h-multi-bar';
-            else if (rawType.includes('h-bar') || rawType.includes('가로형 단일막대') || rawType.includes('가로막대')) mappedType = 'h-bar';
-            else if (rawType.includes('stacked-bar') || rawType.includes('누적막대')) mappedType = 'stacked-bar';
-            else if (rawType.includes('multi-bar') || rawType.includes('다중막대')) mappedType = 'multi-bar';
-            else if (rawType.includes('multi-line') || rawType.includes('다중선')) mappedType = 'multi-line';
-            else if (rawType.includes('combo') || rawType.includes('혼합')) mappedType = 'combo';
-            else if (rawType.includes('pie') || rawType.includes('원')) mappedType = 'pie';
-            else if (rawType.includes('list') || rawType.includes('리스트')) mappedType = 'list';
-            else if (rawType.includes('table') || rawType.includes('표')) mappedType = 'table';
-            else if (rawType.includes('bar') || rawType.includes('막대')) mappedType = 'bar';
-            else if (rawType.includes('line') || rawType.includes('선')) mappedType = 'line';
-        }
-
-        let data2 = extract('[데이터2수치]');
-        if (data2 !== '') {
-            if (mappedType === 'line') mappedType = 'multi-line';
-            else if (mappedType === 'bar') mappedType = 'multi-bar';
-            else if (mappedType === 'h-bar') mappedType = 'h-multi-bar';
-            else if (mappedType === 'pie') mappedType = 'multi-bar';
-        }
-
-        document.getElementById('chartType').value = preserveSelectedType ? document.getElementById('chartType').value : mappedType;
-        
-        if (extract('[제목]')) document.getElementById('titleInput').value = extract('[제목]');
-        if (extract('[부제목]')) document.getElementById('subInput').value = extract('[부제목]');
-        
-        const parsedLabels = parseLabelSeries(extract('[X축]'));
-        const expectedDataCount = parsedLabels.length;
-        if (parsedLabels.length) document.getElementById('labelsInput').value = parsedLabels.join(', ');
-        
-        if (extract('[데이터1수치]')) { document.getElementById('dataName1').value = extract('[데이터1이름]'); document.getElementById('dataInput1').value = normalizeNumberInput(extract('[데이터1수치]'), expectedDataCount); }
-        if (extract('[데이터2수치]')) { document.getElementById('dataName2').value = extract('[데이터2이름]'); document.getElementById('dataInput2').value = normalizeNumberInput(extract('[데이터2수치]'), expectedDataCount); }
-        if (extract('[데이터3수치]')) { document.getElementById('dataName3').value = extract('[데이터3이름]'); document.getElementById('dataInput3').value = normalizeNumberInput(extract('[데이터3수치]'), expectedDataCount); }
-        if (extract('[데이터4수치]')) { document.getElementById('dataName4').value = extract('[데이터4이름]'); document.getElementById('dataInput4').value = normalizeNumberInput(extract('[데이터4수치]'), expectedDataCount); }
-        
-        if (extract('[Y좌측최소]')) document.getElementById('yMin').value = normalizeNumberInput(extract('[Y좌측최소]'));
-        if (extract('[Y좌측최대]')) document.getElementById('yMax').value = normalizeNumberInput(extract('[Y좌측최대]'));
-        if (extract('[Y우측최소]')) document.getElementById('y1Min').value = normalizeNumberInput(extract('[Y우측최소]'));
-        if (extract('[Y우측최대]')) document.getElementById('y1Max').value = normalizeNumberInput(extract('[Y우측최대]'));
-        if (extract('[하단주석]')) document.getElementById('footnoteInput').value = extract('[하단주석]');
-        
-        const tableData = extract('[표데이터]');
-        if (tableData) document.getElementById('tableDataInput').value = tableData;
-
-        toggleInputs();
-        updateOutput(); // 즉시 갱신
-
-        setParseSummary('태그 기반 데이터를 성공적으로 매핑했습니다.', 'ok');
-
-        const btn = document.getElementById('autoFillBtn');
-        if (!silent && btn) {
-            const originalText = btn.innerText;
-            btn.innerText = '✅ 맵핑 완료!'; btn.style.backgroundColor = '#111';
-            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
-        }
-
-        recordHistoryCheckpoint('제미나이 태그 데이터 입력');
-        return true;
-    }
-        }
-
-        // 🌟 [핵심 개선] 태그가 없는 일반 표 데이터(엑셀 복붙 등) 자동 인식/반영 🌟
-        if (!hasTags) {
-            let labels = [];
-            let d1 = [], d2 = [], d3 = [], d4 = [];
-            let n1 = '데이터 1', n2 = '데이터 2', n3 = '데이터 3', n4 = '데이터 4';
-            
-            const validLines = lines.filter(l => l.trim().length > 0);
-            if (validLines.length === 0) return false;
-
-            // 탭이나 콤마로 데이터 분리
-            let delimiter = validLines.some(l => l.includes('\t')) ? '\t' : ',';
-            let startIndex = 0;
-            let firstRow = validLines[0].split(delimiter).map(s => s.trim());
-            
-            // 첫 줄의 두 번째 값이 숫자가 아니면 헤더(이름)로 간주
-            if (firstRow.length > 1 && isNaN(Number(firstRow[1].replace(/,/g, '')))) {
-                if (firstRow[1]) n1 = firstRow[1];
-                if (firstRow[2]) n2 = firstRow[2];
-                if (firstRow[3]) n3 = firstRow[3];
-                if (firstRow[4]) n4 = firstRow[4];
-                startIndex = 1;
-            }
-
-            for (let i = startIndex; i < validLines.length; i++) {
-                let cols = validLines[i].split(delimiter).map(c => c.trim());
-                if (cols.length >= 1 && cols[0]) labels.push(cols[0]);
-                if (cols.length >= 2) d1.push(cols[1].replace(/[^\d.-]/g, '')); // 숫자 이외 제거(콤마 포함)
-                if (cols.length >= 3) d2.push(cols[2].replace(/[^\d.-]/g, ''));
-                if (cols.length >= 4) d3.push(cols[3].replace(/[^\d.-]/g, ''));
-                if (cols.length >= 5) d4.push(cols[4].replace(/[^\d.-]/g, ''));
-            }
-
-            document.getElementById('labelsInput').value = labels.join(', ');
-            document.getElementById('dataName1').value = n1; document.getElementById('dataInput1').value = d1.join(', ');
-            if (d2.length) { document.getElementById('dataName2').value = n2; document.getElementById('dataInput2').value = d2.join(', '); }
-            if (d3.length) { document.getElementById('dataName3').value = n3; document.getElementById('dataInput3').value = d3.join(', '); }
-            if (d4.length) { document.getElementById('dataName4').value = n4; document.getElementById('dataInput4').value = d4.join(', '); }
-
-            toggleInputs();
-            updateOutput(); // <--- 여기가 누락되어 화면이 갱신되지 않았음!
-            setParseSummary('일반 표/텍스트 데이터를 인식하여 성공적으로 변환했습니다.', 'ok');
-            
-            const btn = document.getElementById('autoFillBtn');
-            if (!silent && btn) {
-                const originalText = btn.innerText;
-                btn.innerText = '✅ 데이터 변환 성공!'; btn.style.backgroundColor = '#111';
-                setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
-            }
-            recordHistoryCheckpoint('표 데이터 자동 입력');
-            return true;
-        }
-
-        const extract = (tag) => parsedData[tag] ? parsedData[tag].trim() : '';
-
-        let rawType = extract('[종류]').toLowerCase();
-        let mappedType = 'line';
-
-        if (rawType.includes('chart-table') || rawType.includes('그래프+표')) mappedType = 'chart-table';
-        else if (rawType.includes('timeline') || rawType.includes('타임라인')) mappedType = 'timeline';
-        else if (rawType.includes('stacked-combo') || rawType.includes('누적막대+선')) mappedType = 'stacked-combo';
-        else if (rawType.includes('multi-combo') || rawType.includes('다중막대+선')) mappedType = 'multi-combo';
-        else if (rawType.includes('h-stacked-bar') || rawType.includes('가로형 누적')) mappedType = 'h-stacked-bar';
-        else if (rawType.includes('h-multi-bar') || rawType.includes('가로형 다중막대')) mappedType = 'h-multi-bar';
-        else if (rawType.includes('h-bar') || rawType.includes('가로형 단일막대') || rawType.includes('가로막대')) mappedType = 'h-bar';
-        else if (rawType.includes('stacked-bar') || rawType.includes('누적막대')) mappedType = 'stacked-bar';
-        else if (rawType.includes('multi-bar') || rawType.includes('다중막대')) mappedType = 'multi-bar';
-        else if (rawType.includes('multi-line') || rawType.includes('다중선')) mappedType = 'multi-line';
-        else if (rawType.includes('combo') || rawType.includes('혼합')) mappedType = 'combo';
-        else if (rawType.includes('pie') || rawType.includes('원')) mappedType = 'pie';
-        else if (rawType.includes('list') || rawType.includes('리스트')) mappedType = 'list';
-        else if (rawType.includes('table') || rawType.includes('표')) mappedType = 'table';
-        else if (rawType.includes('bar') || rawType.includes('막대')) mappedType = 'bar';
-        else if (rawType.includes('line') || rawType.includes('선')) mappedType = 'line';
-
-        let data2 = extract('[데이터2수치]');
-        if (data2 !== '') {
-            if (mappedType === 'line') mappedType = 'multi-line';
-            else if (mappedType === 'bar') mappedType = 'multi-bar';
-            else if (mappedType === 'h-bar') mappedType = 'h-multi-bar';
-        }
-
-        document.getElementById('chartType').value = preserveSelectedType ? currentSelectedType : mappedType;
-        document.getElementById('titleInput').value = extract('[제목]');
-        document.getElementById('subInput').value = extract('[부제목]');
-        const parsedLabels = parseLabelSeries(extract('[X축]'));
-        const expectedDataCount = parsedLabels.length;
-        document.getElementById('labelsInput').value = parsedLabels.join(', ');
-        document.getElementById('dataName1').value = extract('[데이터1이름]'); document.getElementById('dataInput1').value = normalizeNumberInput(extract('[데이터1수치]'), expectedDataCount);
-        document.getElementById('dataName2').value = extract('[데이터2이름]'); document.getElementById('dataInput2').value = normalizeNumberInput(extract('[데이터2수치]'), expectedDataCount);
-        document.getElementById('dataName3').value = extract('[데이터3이름]'); document.getElementById('dataInput3').value = normalizeNumberInput(extract('[데이터3수치]'), expectedDataCount);
-        document.getElementById('dataName4').value = extract('[데이터4이름]'); document.getElementById('dataInput4').value = normalizeNumberInput(extract('[데이터4수치]'), expectedDataCount);
-        document.getElementById('yMin').value = normalizeNumberInput(extract('[Y좌측최소]'));
-        document.getElementById('yMax').value = normalizeNumberInput(extract('[Y좌측최대]'));
-        document.getElementById('y1Min').value = normalizeNumberInput(extract('[Y우측최소]'));
-        document.getElementById('y1Max').value = normalizeNumberInput(extract('[Y우측최대]'));
-        document.getElementById('footnoteInput').value = extract('[하단주석]');
-        const tableData = extract('[표데이터]');
-        if (tableData) document.getElementById('tableDataInput').value = tableData;
-
-        toggleInputs();
-        updateOutput(); // <--- 여기도 누락되어 화면이 갱신되지 않았음!
-
-        const analysis = analyzeParsedState(document.getElementById('chartType').value);
-        const unknownSuffix = unknownLines.length ? ` 확인 필요: 알 수 없는 태그/행 ${[...new Set(unknownLines)].slice(0, 3).join(', ')}` : '';
-        setParseSummary(analysis.message + unknownSuffix, unknownLines.length ? 'warn' : analysis.status);
-
-        const btn = document.getElementById('autoFillBtn');
-        if (!silent && btn) {
-            const originalText = btn.innerText;
-            btn.innerText = '✅ 데이터 맵핑 성공!'; btn.style.backgroundColor = '#111';
-            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
-        }
-
-        recordHistoryCheckpoint('제미나이 데이터 자동 입력');
-        return true;
-    }
-
-    // 🚨 여기서 모든 입력창의 '실시간 감지(updateOutput)'가 시작됩니다 🚨
-    window.onload = function() { 
-        buildFriendlyControlMenu();
-        initHistoryControls();
-        setupInlineEditing();
-        setupChartQuickEditing();
-        setupPreviewQuickEditing();
-        setupPieSideListQuickEditing();
-        updateFavoriteSelect();
-        applyPalettePreset('dohae', { skipUpdate: true, skipHistory: true });
-        const initialType = document.getElementById('chartType').value;
-        initializedChartTypes.add(initialType);
-        loadExampleData();
-        updateExportSizeHint();
-        setParseSummary('제미나이 텍스트를 붙여넣으면 파싱 요약이 표시됩니다.', 'ok');
-
-        const exportScaleEl = document.getElementById('exportScale');
-        if (exportScaleEl) {
-            exportScaleEl.addEventListener('change', updateExportSizeHint);
-        } 
-        
-        // 데이터 입력칸들 실시간 반영 리스너
-        ['labelsInput', 'dataName1', 'dataName2', 'dataName3', 'dataName4', 'dataInput1', 'dataInput2', 'dataInput3', 'dataInput4'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('input', () => {
-                refreshHighlightControls();
-                refreshDatasetLabelDisplayControls();
-                refreshDatasetFontControls();
-                refreshDatasetColorControls();
-                updateOutput(); // <--- 바로 렌더링
-            });
-        });
-
-        // 텍스트/기타 설정들 실시간 반영 리스너
-        ['titleInput', 'subInput', 'footnoteInput', 'nameInput', 'yMin', 'yMax', 'y1Min', 'y1Max', 'tableDataInput'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('input', updateOutput); // <--- 바로 렌더링
-        });
-
-        updateDatasetFontDisplays();
-        refreshDatasetLabelDisplayControls();
-        refreshDatasetFontControls();
-        refreshDatasetColorControls();
-
-        const tableDataInputEl = document.getElementById('tableDataInput');
-        if (tableDataInputEl) tableDataInputEl.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                this.value = this.value.substring(0, start) + '\t' + this.value.substring(end);
-                this.selectionStart = this.selectionEnd = start + 1;
-            }
-        });
-
-        recordHistoryCheckpoint('초기 상태');
-    };
+    setParseSummary('엑셀에서 복사(Ctrl+C) → 위 칸에 붙여넣기(Ctrl+V) → [엑셀 데이터 불러오기] 버튼을 누르세요.');
+});
 </script>
 </body>
 </html>
