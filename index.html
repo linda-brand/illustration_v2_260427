@@ -2194,46 +2194,186 @@
         const { preserveSelectedType = false, silent = false } = options;
         const inputEl = document.getElementById('geminiInput');
         const text = inputEl ? inputEl.value : '';
+        
         if (!text.trim()) {
-            if (!silent) alert("제미나이에서 추출한 텍스트나 표 데이터를 먼저 붙여넣어 주세요.");
+            if (!silent) alert("엑셀 데이터나 텍스트를 먼저 붙여넣어 주세요.");
             setParseSummary('붙여넣은 내용이 없습니다.', 'error');
             return false;
         }
 
-        const currentSelectedType = document.getElementById('chartType').value;
+        // --- 1. 기존 제미나이 태그 형식 처리 (호환성 유지) ---
         const parsedData = {};
-        const unknownLines = [];
         let currentTag = '';
-        const allowedTags = new Set([
-            '[종류]', '[제목]', '[부제목]', '[X축]',
-            '[데이터1이름]', '[데이터1수치]', '[데이터2이름]', '[데이터2수치]',
-            '[데이터3이름]', '[데이터3수치]', '[데이터4이름]', '[데이터4수치]',
-            '[Y좌측최소]', '[Y좌측최대]', '[Y우측최소]', '[Y우측최대]', '[하단주석]', '[표데이터]'
-        ]);
-
+        let hasTags = false;
         const tagLinePattern = /^\s*(\[[^\]]+\])\s*[:：]?\s*(.*)$/;
         const lines = text.split(/\r?\n/);
-        let hasTags = false;
 
         for (let line of lines) {
             const match = line.match(tagLinePattern);
             if (match) {
                 hasTags = true;
                 currentTag = match[1].trim();
-                if (!parsedData[currentTag]) parsedData[currentTag] = '';
-                if (!allowedTags.has(currentTag)) unknownLines.push(currentTag);
-                const inlineValue = (match[2] || '').trim();
-                if (inlineValue) parsedData[currentTag] += (parsedData[currentTag] ? '\n' : '') + inlineValue;
-                continue;
+                parsedData[currentTag] = (parsedData[currentTag] ? parsedData[currentTag] + '\n' : '') + (match[2] || '').trim();
+            } else if (currentTag) {
+                parsedData[currentTag] += '\n' + line.trim();
             }
-            const trimmedLine = line.trim();
-            if (currentTag) {
-                if (parsedData[currentTag] !== '' || trimmedLine !== '') {
-                    parsedData[currentTag] += (parsedData[currentTag] ? '\n' : '') + trimmedLine;
+        }
+
+        // --- 🌟 2. [핵심] 엑셀에서 바로 복붙한 일반 데이터 완벽 인식 로직 🌟 ---
+        if (!hasTags) {
+            let validLines = lines.filter(l => l.trim().length > 0);
+            if (validLines.length === 0) return false;
+
+            // 엑셀에서 복붙하면 보통 탭(\t)으로 열이 구분됩니다.
+            let delimiter = validLines.some(l => l.includes('\t')) ? '\t' : ',';
+            
+            let title = '';
+            let startIndex = 0;
+            
+            // 2-1. 첫 줄이 단일 셀(제목)인지 확인
+            let firstRow = validLines[0].split(delimiter).map(s => s.trim());
+            if (firstRow.length === 1 && validLines.length > 1) {
+                title = firstRow[0].replace(/[*`#>]/g, ''); // 마크다운 기호 제거
+                startIndex = 1;
+            }
+
+            // 2-2. 데이터 추출 준비
+            let labels = [];
+            let d1 = [], d2 = [], d3 = [], d4 = [];
+            let n1 = '데이터 1', n2 = '데이터 2', n3 = '데이터 3', n4 = '데이터 4';
+
+            // 2-3. 헤더(데이터명) 확인: 첫 데이터 줄의 두 번째 값이 문자인지 확인
+            if (startIndex < validLines.length) {
+                let headerRow = validLines[startIndex].split(delimiter).map(s => s.trim());
+                // 숫자가 아니면 헤더 행으로 간주
+                if (headerRow.length > 1 && isNaN(Number(headerRow[1].replace(/[,%]/g, '')))) {
+                    if (headerRow[1]) n1 = headerRow[1].replace(/[*`#>]/g, '');
+                    if (headerRow[2]) n2 = headerRow[2].replace(/[*`#>]/g, '');
+                    if (headerRow[3]) n3 = headerRow[3].replace(/[*`#>]/g, '');
+                    if (headerRow[4]) n4 = headerRow[4].replace(/[*`#>]/g, '');
+                    startIndex++;
                 }
-            } else if (trimmedLine) {
-                unknownLines.push(trimmedLine.slice(0, 20));
             }
+
+            // 2-4. 본문(X축 항목 및 수치) 추출
+            for (let i = startIndex; i < validLines.length; i++) {
+                let cols = validLines[i].split(delimiter).map(c => c.trim());
+                if (cols.length >= 1 && cols[0]) labels.push(cols[0].replace(/[*`#>]/g, ''));
+                // 숫자, 소수점, 음수기호 외(콤마, % 등) 모두 제거하여 순수 숫자로 추출
+                if (cols.length >= 2) d1.push(cols[1].replace(/[^\d.-]/g, '')); 
+                if (cols.length >= 3) d2.push(cols[2].replace(/[^\d.-]/g, ''));
+                if (cols.length >= 4) d3.push(cols[3].replace(/[^\d.-]/g, ''));
+                if (cols.length >= 5) d4.push(cols[4].replace(/[^\d.-]/g, ''));
+            }
+
+            // 2-5. 입력칸에 값 할당
+            if (title) document.getElementById('titleInput').value = title;
+            document.getElementById('labelsInput').value = labels.join(', ');
+            
+            document.getElementById('dataName1').value = n1; 
+            document.getElementById('dataInput1').value = d1.join(', ');
+            
+            if (d2.length && d2.some(v => v !== '')) { document.getElementById('dataName2').value = n2; document.getElementById('dataInput2').value = d2.join(', '); } else { document.getElementById('dataInput2').value = ''; document.getElementById('dataName2').value = ''; }
+            if (d3.length && d3.some(v => v !== '')) { document.getElementById('dataName3').value = n3; document.getElementById('dataInput3').value = d3.join(', '); } else { document.getElementById('dataInput3').value = ''; document.getElementById('dataName3').value = ''; }
+            if (d4.length && d4.some(v => v !== '')) { document.getElementById('dataName4').value = n4; document.getElementById('dataInput4').value = d4.join(', '); } else { document.getElementById('dataInput4').value = ''; document.getElementById('dataName4').value = ''; }
+
+            // 데이터가 여러 열일 경우 자동으로 다중 그래프(Multi) 모드로 변경
+            const currentType = document.getElementById('chartType').value;
+            if (d2.length && d2.some(v=>v!=='') && !chartUsesMultipleDatasets(currentType) && !['table', 'list', 'timeline'].includes(currentType)) {
+                if (currentType === 'line') document.getElementById('chartType').value = 'multi-line';
+                else if (currentType === 'bar' || currentType === 'pie') document.getElementById('chartType').value = 'multi-bar';
+                else if (currentType === 'h-bar') document.getElementById('chartType').value = 'h-multi-bar';
+            }
+
+            // 표 데이터 칸에도 원본 동기화
+            const tableDataInput = document.getElementById('tableDataInput');
+            if(tableDataInput) tableDataInput.value = text.trim();
+
+            toggleInputs();
+            updateOutput(); // 즉시 화면 렌더링 갱신
+            setParseSummary('엑셀/텍스트 데이터를 성공적으로 차트에 반영했습니다.', 'ok');
+            
+            const btn = document.getElementById('autoFillBtn');
+            if (!silent && btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ 데이터 반영 성공!'; btn.style.backgroundColor = '#111';
+                setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
+            }
+            recordHistoryCheckpoint('엑셀 표 데이터 자동 입력');
+            return true;
+        }
+
+        // --- 3. 제미나이 태그가 있을 경우의 처리 ---
+        const extract = (tag) => parsedData[tag] ? parsedData[tag].trim() : '';
+
+        let rawType = extract('[종류]').toLowerCase();
+        let mappedType = document.getElementById('chartType').value;
+
+        if (rawType) {
+            if (rawType.includes('chart-table') || rawType.includes('그래프+표')) mappedType = 'chart-table';
+            else if (rawType.includes('timeline') || rawType.includes('타임라인')) mappedType = 'timeline';
+            else if (rawType.includes('stacked-combo') || rawType.includes('누적막대+선')) mappedType = 'stacked-combo';
+            else if (rawType.includes('multi-combo') || rawType.includes('다중막대+선')) mappedType = 'multi-combo';
+            else if (rawType.includes('h-stacked-bar') || rawType.includes('가로형 누적')) mappedType = 'h-stacked-bar';
+            else if (rawType.includes('h-multi-bar') || rawType.includes('가로형 다중막대')) mappedType = 'h-multi-bar';
+            else if (rawType.includes('h-bar') || rawType.includes('가로형 단일막대') || rawType.includes('가로막대')) mappedType = 'h-bar';
+            else if (rawType.includes('stacked-bar') || rawType.includes('누적막대')) mappedType = 'stacked-bar';
+            else if (rawType.includes('multi-bar') || rawType.includes('다중막대')) mappedType = 'multi-bar';
+            else if (rawType.includes('multi-line') || rawType.includes('다중선')) mappedType = 'multi-line';
+            else if (rawType.includes('combo') || rawType.includes('혼합')) mappedType = 'combo';
+            else if (rawType.includes('pie') || rawType.includes('원')) mappedType = 'pie';
+            else if (rawType.includes('list') || rawType.includes('리스트')) mappedType = 'list';
+            else if (rawType.includes('table') || rawType.includes('표')) mappedType = 'table';
+            else if (rawType.includes('bar') || rawType.includes('막대')) mappedType = 'bar';
+            else if (rawType.includes('line') || rawType.includes('선')) mappedType = 'line';
+        }
+
+        let data2 = extract('[데이터2수치]');
+        if (data2 !== '') {
+            if (mappedType === 'line') mappedType = 'multi-line';
+            else if (mappedType === 'bar') mappedType = 'multi-bar';
+            else if (mappedType === 'h-bar') mappedType = 'h-multi-bar';
+            else if (mappedType === 'pie') mappedType = 'multi-bar';
+        }
+
+        document.getElementById('chartType').value = preserveSelectedType ? document.getElementById('chartType').value : mappedType;
+        
+        if (extract('[제목]')) document.getElementById('titleInput').value = extract('[제목]');
+        if (extract('[부제목]')) document.getElementById('subInput').value = extract('[부제목]');
+        
+        const parsedLabels = parseLabelSeries(extract('[X축]'));
+        const expectedDataCount = parsedLabels.length;
+        if (parsedLabels.length) document.getElementById('labelsInput').value = parsedLabels.join(', ');
+        
+        if (extract('[데이터1수치]')) { document.getElementById('dataName1').value = extract('[데이터1이름]'); document.getElementById('dataInput1').value = normalizeNumberInput(extract('[데이터1수치]'), expectedDataCount); }
+        if (extract('[데이터2수치]')) { document.getElementById('dataName2').value = extract('[데이터2이름]'); document.getElementById('dataInput2').value = normalizeNumberInput(extract('[데이터2수치]'), expectedDataCount); }
+        if (extract('[데이터3수치]')) { document.getElementById('dataName3').value = extract('[데이터3이름]'); document.getElementById('dataInput3').value = normalizeNumberInput(extract('[데이터3수치]'), expectedDataCount); }
+        if (extract('[데이터4수치]')) { document.getElementById('dataName4').value = extract('[데이터4이름]'); document.getElementById('dataInput4').value = normalizeNumberInput(extract('[데이터4수치]'), expectedDataCount); }
+        
+        if (extract('[Y좌측최소]')) document.getElementById('yMin').value = normalizeNumberInput(extract('[Y좌측최소]'));
+        if (extract('[Y좌측최대]')) document.getElementById('yMax').value = normalizeNumberInput(extract('[Y좌측최대]'));
+        if (extract('[Y우측최소]')) document.getElementById('y1Min').value = normalizeNumberInput(extract('[Y우측최소]'));
+        if (extract('[Y우측최대]')) document.getElementById('y1Max').value = normalizeNumberInput(extract('[Y우측최대]'));
+        if (extract('[하단주석]')) document.getElementById('footnoteInput').value = extract('[하단주석]');
+        
+        const tableData = extract('[표데이터]');
+        if (tableData) document.getElementById('tableDataInput').value = tableData;
+
+        toggleInputs();
+        updateOutput(); // 즉시 갱신
+
+        setParseSummary('태그 기반 데이터를 성공적으로 매핑했습니다.', 'ok');
+
+        const btn = document.getElementById('autoFillBtn');
+        if (!silent && btn) {
+            const originalText = btn.innerText;
+            btn.innerText = '✅ 맵핑 완료!'; btn.style.backgroundColor = '#111';
+            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
+        }
+
+        recordHistoryCheckpoint('제미나이 태그 데이터 입력');
+        return true;
+    }
         }
 
         // 🌟 [핵심 개선] 태그가 없는 일반 표 데이터(엑셀 복붙 등) 자동 인식/반영 🌟
