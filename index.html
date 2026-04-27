@@ -231,7 +231,7 @@
         <label style="color:var(--main-color); font-size:14px; margin-top:0;">🎨 색상 팔레트</label>
         <div class="palette-preset-grid">
             <button type="button" class="palette-btn active" data-palette="dohae" onclick="applyPalettePreset('dohae')"><span class="palette-swatch" style="background:#433F8E"></span>도해 기본</button>
-            <button type="button" class="palette-btn" data-palette="economyBlue" onclick="applyPalettePreset('economyBlue')"><span class="palette-swatch" style="background:#1F6FEB"></span>경제 지표용</button>
+            <button type="button" class="palette-btn" data-palette="economyBlue" onclick="applyPalettePreset('economyBlue')"><span class="palette-swatch" style="background:#1F6FEB"></span>통일성 강조</button>
             <button type="button" class="palette-btn" data-palette="riskRed" onclick="applyPalettePreset('riskRed')"><span class="palette-swatch" style="background:#C1121F"></span>경고·위험 강조</button>
             <button type="button" class="palette-btn" data-palette="compareGray" onclick="applyPalettePreset('compareGray')"><span class="palette-swatch" style="background:#555"></span>비교 대조용</button>
         </div>
@@ -291,12 +291,13 @@
         <label style="color:var(--main-color); font-size:14px; margin-top:0;">📸 저장 배율 선택</label>
         <div class="export-option-row">
             <select id="exportScale" onchange="updateExportSizeHint()">
-                <option value="2" selected>2배 (1500px 기준)</option>
-                <option value="3">3배 (2250px 기준)</option>
-                <option value="4">4배 최고화질 (3000px 기준)</option>
+                <option value="3">3배 고화질 (2250px)</option>
+                <option value="4" selected>4배 최고화질 (3000px) ★추천</option>
+                <option value="5">5배 인쇄급 (3750px)</option>
+                <option value="6">6배 초고화질 (4500px)</option>
             </select>
         </div>
-        <span class="export-size-hint" id="exportSizeHint">750px 기준 2배 크기로 저장합니다.</span>
+        <span class="export-size-hint" id="exportSizeHint">750px 기준 4배(3000px)로 저장합니다. 그래프도 선명하게 출력됩니다.</span>
     </div>
 
     <button onclick="downloadImage()" class="btn-download">📸 고해상도 PNG 저장</button>
@@ -367,7 +368,7 @@ const PALETTE_PRESETS = {
         pie: ['#433F8E','#2EAAB1','#FF7A4F','#FAD378','#A19FC4','#D1EAEB']
     },
     economyBlue: {
-        label: '경제 지표용', main: '#1F6FEB', accent: '#4FA3FF',
+        label: '통일성 강조', main: '#1F6FEB', accent: '#4FA3FF',
         bar: ['#1F6FEB','#4FA3FF','#8EC5FF','#2F4154'],
         line: ['#1F6FEB','#0B3D91','#4FA3FF','#7B8794'],
         pie: ['#1F6FEB','#4FA3FF','#8EC5FF','#BFDFFF','#6E879F','#D6E9FF']
@@ -1051,27 +1052,66 @@ function renderTable(type, fontSize, korType) {
 //  PNG 저장
 // ═══════════════════════════════════════════════════════
 function getSelectedExportScale() {
-    const v = parseInt(val('exportScale') || '2');
-    return [2,3,4].includes(v) ? v : 2;
+    const v = parseInt(val('exportScale') || '4');
+    return [3,4,5,6].includes(v) ? v : 4;
 }
 function updateExportSizeHint() {
     const sc = getSelectedExportScale();
     const el = document.getElementById('exportSizeHint');
-    if (el) el.textContent = `750px 기준 ${sc}배 크기(${750*sc}px)로 저장합니다.`;
+    if (el) el.textContent = `750px 기준 ${sc}배(${750*sc}px)로 저장합니다. 그래프도 선명하게 출력됩니다.`;
 }
 async function downloadImage() {
     const captureEl = document.getElementById('capture-area');
-    const scale = getSelectedExportScale();
+    const exportScale = getSelectedExportScale();
+    const btn = document.getElementById('downloadBtn') || document.querySelector('.btn-download');
+
+    // 버튼 비활성화
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ 저장 중...'; }
+
     try {
+        // ── 핵심: 저장 전 차트를 고DPI로 업스케일 렌더링 ──
+        let chartPixelRatioBackup = null;
+        if (window.myChart) {
+            chartPixelRatioBackup = window.myChart.options.devicePixelRatio;
+            window.myChart.options.devicePixelRatio = exportScale * (window.devicePixelRatio || 1);
+            window.myChart.resize();
+            window.myChart.update('none');
+            // 렌더링이 완전히 끝날 때까지 대기
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            await new Promise(r => setTimeout(r, 120));
+        }
+
         const canvas = await html2canvas(captureEl, {
-            scale, useCORS: true, backgroundColor: '#ffffff', logging: false
+            scale: exportScale,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            imageTimeout: 20000,
+            onclone: (doc) => {
+                // 클론 문서에서 data-html2canvas-ignore 요소 숨김 처리
+                doc.querySelectorAll('[data-html2canvas-ignore]').forEach(el => el.style.display = 'none');
+            }
         });
+
+        // ── 차트 DPI 원복 ──
+        if (window.myChart && chartPixelRatioBackup !== null) {
+            window.myChart.options.devicePixelRatio = chartPixelRatioBackup;
+            window.myChart.resize();
+            window.myChart.update('none');
+        }
+
         const a = document.createElement('a');
-        a.download = '도해프로젝트_' + Date.now() + '.png';
-        a.href = canvas.toDataURL('image/png');
+        a.download = '도해프로젝트_' + new Date().toISOString().slice(0,10) + '_' + exportScale + 'x.png';
+        a.href = canvas.toDataURL('image/png', 1.0);
         a.click();
+
     } catch(e) {
         alert('저장 중 오류가 발생했습니다: ' + e.message);
+        // 오류 시에도 차트 복원
+        if (window.myChart) { window.myChart.resize(); window.myChart.update('none'); }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '📸 고해상도 PNG 저장'; }
     }
 }
 
