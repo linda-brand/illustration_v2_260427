@@ -3021,7 +3021,7 @@ function openDataSheet() {
         const inputEl = document.getElementById('geminiInput');
         const text = inputEl ? inputEl.value : '';
         if (!text.trim()) {
-            if (!silent) alert("제미나이에서 추출한 텍스트를 먼저 붙여넣어 주세요.");
+            if (!silent) alert("제미나이에서 추출한 텍스트나 표 데이터를 먼저 붙여넣어 주세요.");
             setParseSummary('붙여넣은 내용이 없습니다.', 'error');
             return false;
         }
@@ -3039,9 +3039,12 @@ function openDataSheet() {
 
         const tagLinePattern = /^\s*(\[[^\]]+\])\s*[:：]?\s*(.*)$/;
         const lines = text.split(/\r?\n/);
+        let hasTags = false;
+
         for (let line of lines) {
             const match = line.match(tagLinePattern);
             if (match) {
+                hasTags = true;
                 currentTag = match[1].trim();
                 if (!parsedData[currentTag]) parsedData[currentTag] = '';
                 if (!allowedTags.has(currentTag)) unknownLines.push(currentTag);
@@ -3058,6 +3061,55 @@ function openDataSheet() {
                 unknownLines.push(trimmedLine.slice(0, 20));
             }
         }
+
+        // 🌟 [핵심 개선] [태그]가 없는 일반 텍스트(엑셀 복붙 등) 자동 인식 로직 🌟
+        if (!hasTags) {
+            let labels = [];
+            let d1 = [], d2 = [], d3 = [], d4 = [];
+            let n1 = '데이터 1', n2 = '데이터 2', n3 = '데이터 3', n4 = '데이터 4';
+            
+            const validLines = lines.filter(l => l.trim().length > 0);
+            let delimiter = validLines.some(l => l.includes('\t')) ? '\t' : ',';
+            
+            let startIndex = 0;
+            let firstRow = validLines[0].split(delimiter).map(s => s.trim());
+            // 첫 줄의 두 번째 값이 숫자가 아니면(문자면) 헤더(이름)로 간주
+            if (firstRow.length > 1 && isNaN(Number(firstRow[1].replace(/,/g, '')))) {
+                if (firstRow[1]) n1 = firstRow[1];
+                if (firstRow[2]) n2 = firstRow[2];
+                if (firstRow[3]) n3 = firstRow[3];
+                if (firstRow[4]) n4 = firstRow[4];
+                startIndex = 1;
+            }
+
+            for (let i = startIndex; i < validLines.length; i++) {
+                let cols = validLines[i].split(delimiter).map(c => c.trim());
+                if (cols.length >= 1) labels.push(cols[0]);
+                if (cols.length >= 2) d1.push(cols[1].replace(/,/g, '')); // 수치 내 콤마 제거
+                if (cols.length >= 3) d2.push(cols[2].replace(/,/g, ''));
+                if (cols.length >= 4) d3.push(cols[3].replace(/,/g, ''));
+                if (cols.length >= 5) d4.push(cols[4].replace(/,/g, ''));
+            }
+
+            document.getElementById('labelsInput').value = labels.join(', ');
+            if (d1.length) { document.getElementById('dataName1').value = n1; document.getElementById('dataInput1').value = d1.join(', '); }
+            if (d2.length) { document.getElementById('dataName2').value = n2; document.getElementById('dataInput2').value = d2.join(', '); }
+            if (d3.length) { document.getElementById('dataName3').value = n3; document.getElementById('dataInput3').value = d3.join(', '); }
+            if (d4.length) { document.getElementById('dataName4').value = n4; document.getElementById('dataInput4').value = d4.join(', '); }
+
+            toggleInputs();
+            setParseSummary('일반 표/텍스트 데이터를 인식하여 성공적으로 변환했습니다.', 'ok');
+            
+            const btn = document.getElementById('autoFillBtn');
+            if (!silent && btn) {
+                const originalText = btn.innerText;
+                btn.innerText = '✅ 데이터 변환 성공!'; btn.style.backgroundColor = '#111';
+                setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = 'var(--main-color)'; }, 2000);
+            }
+            recordHistoryCheckpoint('표 데이터 자동 입력');
+            return true;
+        }
+
         const extract = (tag) => parsedData[tag] ? parsedData[tag].trim() : '';
 
         let rawType = extract('[종류]').toLowerCase();
