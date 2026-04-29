@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>도해 그래프 제작 데스크</title>
+    <title>도해 프로젝트 제작 데스크</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -141,7 +141,7 @@
 <body>
 
 <div class="control-panel">
-    <h2>🛠️ 도해 그래프 제작 데스크</h2>
+    <h2>🛠️ 도해 프로젝트 데스크</h2>
     <div class="history-status" id="historyStatus">작업 이력이 준비되었습니다.</div>
 
     <!-- ★ 직접 입력 섹션 (핵심 기능) -->
@@ -344,7 +344,7 @@
         <div id="table-container"></div>
         <div id="displayFootnote" class="inline-editable"></div>
         <div class="footer-watermark">
-            BrandDesignChapter&nbsp;&nbsp;<span id="displayName" class="inline-editable">도해 프로젝트</span>
+            도해&nbsp;&nbsp;<span id="displayName" class="inline-editable">도해 프로젝트</span>
         </div>
     </div>
 </div>
@@ -854,9 +854,32 @@ function updateOutput() {
         datasets = [{
             data: d1.length ? d1 : [1],
             backgroundColor: palette.pie,
-            borderWidth: 2,
+            borderWidth: 3,
             borderColor: '#fff',
-            hoverOffset: 10
+            hoverOffset: 6,
+            datalabels: {
+                display: (ctx2) => {
+                    const total = ctx2.dataset.data.reduce((s,v)=>s+v,0);
+                    return total > 0 && (ctx2.dataset.data[ctx2.dataIndex]/total) > 0.04;
+                },
+                formatter: (value, ctx2) => {
+                    const lbl = (ctx2.chart.data.labels && ctx2.chart.data.labels[ctx2.dataIndex]) || '';
+                    const total = ctx2.dataset.data.reduce((s,v)=>s+v,0);
+                    const pct = total > 0 ? Math.round(value/total*100) : 0;
+                    const valStr = formatLabel(value, subText, korType);
+                    return lbl + '\n' + valStr + ' (' + pct + '%)';
+                },
+                color: '#fff',
+                font: { size: Math.max(12, fontSize - 4), weight: '900', family: globalFont },
+                textAlign: 'center',
+                textStrokeColor: 'rgba(0,0,0,0.35)',
+                textStrokeWidth: 3,
+                anchor: 'center',
+                align: 'center',
+                offset: 0,
+                clip: false,
+                padding: 4
+            }
         }];
     } else if (type === 'line' || type === 'multi-line') {
         const addLine = (data, name, colorIdx) => ({
@@ -911,10 +934,9 @@ function updateOutput() {
     const canvas = document.getElementById('myChart');
     const pieSideList = document.getElementById('pie-side-list');
 
-    if (isPie && pieSideList) {
-        pieSideList.style.display = 'none';
-        canvas.style.width = '100%';
-    }
+    // 파이: 사이드 리스트 숨기고 캔버스 전체 너비 사용
+    if (pieSideList) pieSideList.style.display = 'none';
+    canvas.style.width = '100%';
 
     const ctx = canvas.getContext('2d');
     const scaleOptions = {};
@@ -946,6 +968,7 @@ function updateOutput() {
                     position: 'bottom',
                     labels: { font: { size: Math.max(12, fontSize-4), family: globalFont, weight: '700' }, padding: 16 }
                 },
+                datalabels: isPie ? {} : { display: false },
                 tooltip: {
                     callbacks: {
                         label: (ctx2) => {
@@ -954,28 +977,12 @@ function updateOutput() {
                         }
                     }
                 },
-                datalabels: { display: false } // 기본 off, 각 dataset에서 개별 설정
+                // datalabels: 각 dataset에서 개별 설정
             },
             scales: isPie ? {} : scaleOptions
         }
     });
 
-    // 원 그래프 사이드 리스트
-    if (isPie && labels.length && d1.length && pieSideList) {
-        const total = d1.reduce((s,v)=>s+v,0);
-        pieSideList.innerHTML = `<div class="pie-side-list-inner">${
-            labels.map((lbl,i)=>{
-                const pct = total>0 ? Math.round(d1[i]/total*100) : 0;
-                const color = palette.pie[i % palette.pie.length];
-                return `<div class="pie-side-item">
-                    <span class="pie-side-dot" style="background:${color}"></span>
-                    <span class="pie-side-text">${lbl}<br><strong>${formatLabel(d1[i],subText,korType)} (${pct}%)</strong></span>
-                </div>`;
-            }).join('')
-        }</div>`;
-        pieSideList.style.display = 'block';
-        canvas.style.width = 'calc(100% - 220px)';
-    }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1081,7 +1088,7 @@ async function downloadImage() {
         });
 
         const a = document.createElement('a');
-        a.download = '쏠북 도해 자산_' + new Date().toISOString().slice(0,10) + '_' + exportScale + 'x.png';
+        a.download = '도해프로젝트_' + new Date().toISOString().slice(0,10) + '_' + exportScale + 'x.png';
         a.href = mainCanvas.toDataURL('image/png', 1.0);
         a.click();
 
